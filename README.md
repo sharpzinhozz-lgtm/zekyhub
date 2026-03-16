@@ -1,1 +1,929 @@
-# zekyhub
+-- ZEKYO HUB V5 - AIMBOT COM SELEÇÃO DE PARTE
+local p=game:GetService("Players");local rs=game:GetService("RunService");local lp=p.LocalPlayer;local cam=workspace.CurrentCamera;local ui=game:GetService("UserInputService");local mouse=lp:GetMouse()
+local a={aim=false,silent=false,esp=false,dist=80,sens=1.0,fov=150,espDist=150,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE"}
+local currentTab="AIMBOT"
+
+-- FUNÇÃO PARA CRIAR GUI
+local function createGui()
+    local parent = game:GetService("CoreGui")
+    local success, err = pcall(function()
+        local g = Instance.new("ScreenGui")
+        g.Parent = parent
+        g:Destroy()
+    end)
+    
+    if not success then
+        parent = lp:FindFirstChild("PlayerGui") or Instance.new("ScreenGui")
+        if parent:IsA("ScreenGui") then
+            parent.Parent = lp
+        end
+    end
+    
+    return parent
+end
+
+local guiParent = createGui()
+
+-- GUI PRINCIPAL
+local g=Instance.new("ScreenGui")
+g.Name="ZekyoHub"
+g.ResetOnSpawn=false
+g.Parent=guiParent
+g.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+g.DisplayOrder=999
+
+local main=Instance.new("Frame")
+main.Size=UDim2.new(0,350,0,670)
+main.Position=UDim2.new(0.5,-175,0.5,-335)
+main.BackgroundColor3=Color3.fromRGB(8,8,18)
+main.BorderSizePixel=0
+main.Active=true
+main.Draggable=true
+main.Parent=g
+Instance.new("UICorner",main).CornerRadius=UDim.new(0,20)
+
+-- TOPO
+local top=Instance.new("Frame",main)
+top.Size=UDim2.new(1,0,0,70)
+top.BackgroundColor3=Color3.fromRGB(0,0,0)
+top.BorderSizePixel=0
+Instance.new("UICorner",top).CornerRadius=UDim.new(0,20)
+
+local gradient=Instance.new("UIGradient",top)
+gradient.Color=ColorSequence.new{
+    ColorSequenceKeypoint.new(0,Color3.fromRGB(255,215,0)),
+    ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,100,0)),
+    ColorSequenceKeypoint.new(1,Color3.fromRGB(255,215,0))
+}
+
+local title=Instance.new("TextLabel",top)
+title.Size=UDim2.new(1,0,0.6,0)
+title.Position=UDim2.new(0,0,0,10)
+title.BackgroundTransparency=1
+title.Text="ZEKYO HUB V5"
+title.TextColor3=Color3.fromRGB(255,255,255)
+title.TextSize=26
+title.Font=Enum.Font.GothamBold
+
+local subtitle=Instance.new("TextLabel",top)
+subtitle.Size=UDim2.new(1,0,0.3,0)
+subtitle.Position=UDim2.new(0,0,0.6,0)
+subtitle.BackgroundTransparency=1
+subtitle.Text="⚡ SELEÇÃO DE PARTE ⚡"
+subtitle.TextColor3=Color3.fromRGB(255,255,200)
+subtitle.TextSize=12
+subtitle.Font=Enum.Font.Gotham
+
+-- ABAS
+local tabFrame=Instance.new("Frame",main)
+tabFrame.Size=UDim2.new(1,-20,0,40)
+tabFrame.Position=UDim2.new(0,10,0,80)
+tabFrame.BackgroundTransparency=1
+
+local aimTab=Instance.new("TextButton",tabFrame)
+aimTab.Size=UDim2.new(0.3,0,1,0)
+aimTab.Position=UDim2.new(0,0,0,0)
+aimTab.BackgroundColor3=Color3.fromRGB(0,150,200)
+aimTab.Text="AIMBOT"
+aimTab.TextColor3=Color3.fromRGB(255,255,255)
+aimTab.TextSize=14
+aimTab.Font=Enum.Font.GothamBold
+Instance.new("UICorner",aimTab).CornerRadius=UDim.new(0,10)
+
+local silentTab=Instance.new("TextButton",tabFrame)
+silentTab.Size=UDim2.new(0.3,0,1,0)
+silentTab.Position=UDim2.new(0.35,0,0,0)
+silentTab.BackgroundColor3=Color3.fromRGB(200,50,150)
+silentTab.Text="SILENT"
+silentTab.TextColor3=Color3.fromRGB(255,255,255)
+silentTab.TextSize=14
+silentTab.Font=Enum.Font.GothamBold
+Instance.new("UICorner",silentTab).CornerRadius=UDim.new(0,10)
+
+local mainTab=Instance.new("TextButton",tabFrame)
+mainTab.Size=UDim2.new(0.3,0,1,0)
+mainTab.Position=UDim2.new(0.7,0,0,0)
+mainTab.BackgroundColor3=Color3.fromRGB(100,200,50)
+mainTab.Text="MAIN"
+mainTab.TextColor3=Color3.fromRGB(255,255,255)
+mainTab.TextSize=14
+mainTab.Font=Enum.Font.GothamBold
+Instance.new("UICorner",mainTab).CornerRadius=UDim.new(0,10)
+
+-- CONTAINER DAS ABAS
+local container=Instance.new("Frame",main)
+container.Size=UDim2.new(1,-20,0,480)
+container.Position=UDim2.new(0,10,0,130)
+container.BackgroundColor3=Color3.fromRGB(15,15,25)
+container.BorderSizePixel=0
+Instance.new("UICorner",container).CornerRadius=UDim.new(0,15)
+
+-- ========== AIMBOT FRAME ==========
+local aimFrame=Instance.new("Frame",container)
+aimFrame.Size=UDim2.new(1,0,1,0)
+aimFrame.BackgroundTransparency=1
+aimFrame.Visible=true
+
+-- Preview da Mira
+local miraPreview=Instance.new("Frame",aimFrame)
+miraPreview.Size=UDim2.new(0.8,0,0,70)
+miraPreview.Position=UDim2.new(0.1,0,0,10)
+miraPreview.BackgroundColor3=Color3.fromRGB(20,20,30)
+miraPreview.BorderSizePixel=0
+Instance.new("UICorner",miraPreview).CornerRadius=UDim.new(0,10)
+
+local previewTitle=Instance.new("TextLabel",miraPreview)
+previewTitle.Size=UDim2.new(1,0,0,25)
+previewTitle.BackgroundTransparency=1
+previewTitle.Text="🎯 MIRA"
+previewTitle.TextColor3=Color3.fromRGB(0,200,255)
+previewTitle.TextSize=14
+previewTitle.Font=Enum.Font.GothamBold
+
+-- Desenho da mira
+local circlePreview=Instance.new("Frame",miraPreview)
+circlePreview.Size=UDim2.new(0,40,0,40)
+circlePreview.Position=UDim2.new(0.5,-20,0.5,-10)
+circlePreview.BackgroundColor3=Color3.fromRGB(0,200,255)
+circlePreview.BackgroundTransparency=0.7
+circlePreview.BorderSizePixel=0
+Instance.new("UICorner",circlePreview).CornerRadius=UDim.new(1,0)
+
+local dotPreview=Instance.new("Frame",miraPreview)
+dotPreview.Size=UDim2.new(0,5,0,5)
+dotPreview.Position=UDim2.new(0.5,-2.5,0.5,-2.5)
+dotPreview.BackgroundColor3=Color3.fromRGB(255,255,255)
+dotPreview.BorderSizePixel=0
+Instance.new("UICorner",dotPreview).CornerRadius=UDim.new(1,0)
+
+-- Botão Ativar Aimbot
+local aimToggle=Instance.new("TextButton",aimFrame)
+aimToggle.Size=UDim2.new(0.8,0,0,30)
+aimToggle.Position=UDim2.new(0.1,0,0,90)
+aimToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
+aimToggle.Text="⚪ ATIVAR AIMBOT"
+aimToggle.TextColor3=Color3.fromRGB(255,255,255)
+aimToggle.TextSize=12
+aimToggle.Font=Enum.Font.GothamBold
+Instance.new("UICorner",aimToggle).CornerRadius=UDim.new(0,8)
+
+-- Configurações
+local configFrame=Instance.new("Frame",aimFrame)
+configFrame.Size=UDim2.new(0.9,0,0,60)
+configFrame.Position=UDim2.new(0.05,0,0,125)
+configFrame.BackgroundTransparency=1
+
+local function criarConfig(cfg,label,valor,x)
+    local bg=Instance.new("Frame",configFrame)
+    bg.Size=UDim2.new(0.3,-5,0,60)
+    bg.Position=UDim2.new(x,0,0,0)
+    bg.BackgroundColor3=Color3.fromRGB(20,20,30)
+    bg.BorderSizePixel=0
+    Instance.new("UICorner",bg).CornerRadius=UDim.new(0,8)
+    
+    local lbl=Instance.new("TextLabel",bg)
+    lbl.Size=UDim2.new(1,0,0,20)
+    lbl.BackgroundTransparency=1
+    lbl.Text=label
+    lbl.TextColor3=Color3.fromRGB(200,200,200)
+    lbl.TextSize=10
+    lbl.Font=Enum.Font.Gotham
+    
+    local box=Instance.new("TextBox",bg)
+    box.Size=UDim2.new(0.8,0,0,25)
+    box.Position=UDim2.new(0.1,0,0,25)
+    box.BackgroundColor3=Color3.fromRGB(30,30,40)
+    box.Text=tostring(valor)
+    box.TextColor3=Color3.fromRGB(0,200,255)
+    box.TextSize=12
+    box.Font=Enum.Font.Gotham
+    Instance.new("UICorner",box).CornerRadius=UDim.new(0,6)
+    
+    return box
+end
+
+local sensBox=criarConfig("SENS","SENS",a.sens,0)
+local distBox=criarConfig("DIST","DIST",a.dist,0.35)
+local fovBox=criarConfig("FOV","FOV",a.fov,0.7)
+
+-- ========== SELEÇÃO DE PARTE DO AIMBOT ==========
+local aimPartFrame=Instance.new("Frame",aimFrame)
+aimPartFrame.Size=UDim2.new(0.8,0,0,50)
+aimPartFrame.Position=UDim2.new(0.1,0,0,190)
+aimPartFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+aimPartFrame.BorderSizePixel=0
+Instance.new("UICorner",aimPartFrame).CornerRadius=UDim.new(0,8)
+
+local aimPartLabel=Instance.new("TextLabel",aimPartFrame)
+aimPartLabel.Size=UDim2.new(0.3,0,1,0)
+aimPartLabel.BackgroundTransparency=1
+aimPartLabel.Text="🎯 MIRAR:"
+aimPartLabel.TextColor3=Color3.fromRGB(255,215,0)
+aimPartLabel.TextSize=11
+aimPartLabel.Font=Enum.Font.GothamBold
+aimPartLabel.TextXAlignment=Enum.TextXAlignment.Right
+
+local aimPartBtn=Instance.new("TextButton",aimPartFrame)
+aimPartBtn.Size=UDim2.new(0.4,0,0,30)
+aimPartBtn.Position=UDim2.new(0.35,0,0.5,-15)
+aimPartBtn.BackgroundColor3=Color3.fromRGB(100,50,150)
+aimPartBtn.Text="HEAD"
+aimPartBtn.TextColor3=Color3.fromRGB(255,255,255)
+aimPartBtn.TextSize=12
+aimPartBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",aimPartBtn).CornerRadius=UDim.new(0,4)
+
+-- FOV Circle toggle
+local fovToggle=Instance.new("TextButton",aimFrame)
+fovToggle.Size=UDim2.new(0.8,0,0,25)
+fovToggle.Position=UDim2.new(0.1,0,0,245)
+fovToggle.BackgroundColor3=Color3.fromRGB(0,150,0)
+fovToggle.Text="⭕ FOV CIRCLE: ATIVADO"
+fovToggle.TextColor3=Color3.fromRGB(255,255,255)
+fovToggle.TextSize=11
+fovToggle.Font=Enum.Font.Gotham
+Instance.new("UICorner",fovToggle).CornerRadius=UDim.new(0,6)
+
+-- KEYBIND SETTINGS
+local keybindFrame=Instance.new("Frame",aimFrame)
+keybindFrame.Size=UDim2.new(0.8,0,0,90)
+keybindFrame.Position=UDim2.new(0.1,0,0,275)
+keybindFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+keybindFrame.BorderSizePixel=0
+Instance.new("UICorner",keybindFrame).CornerRadius=UDim.new(0,8)
+
+local keybindTitle=Instance.new("TextLabel",keybindFrame)
+keybindTitle.Size=UDim2.new(1,0,0,25)
+keybindTitle.BackgroundTransparency=1
+keybindTitle.Text="🔑 CONFIGURAÇÃO DA TECLA"
+keybindTitle.TextColor3=Color3.fromRGB(255,215,0)
+keybindTitle.TextSize=12
+keybindTitle.Font=Enum.Font.GothamBold
+
+-- Linha da tecla
+local keyLine=Instance.new("Frame",keybindFrame)
+keyLine.Size=UDim2.new(0.9,0,0,30)
+keyLine.Position=UDim2.new(0.05,0,0,30)
+keyLine.BackgroundTransparency=1
+
+local keyLabel=Instance.new("TextLabel",keyLine)
+keyLabel.Size=UDim2.new(0.3,0,1,0)
+keyLabel.BackgroundTransparency=1
+keyLabel.Text="TECLA:"
+keyLabel.TextColor3=Color3.fromRGB(200,200,200)
+keyLabel.TextSize=11
+keyLabel.Font=Enum.Font.Gotham
+keyLabel.TextXAlignment=Enum.TextXAlignment.Right
+
+local keyBtn=Instance.new("TextButton",keyLine)
+keyBtn.Size=UDim2.new(0.4,0,0,25)
+keyBtn.Position=UDim2.new(0.35,0,0.5,-12.5)
+keyBtn.BackgroundColor3=Color3.fromRGB(30,30,40)
+keyBtn.Text="[ X ]"
+keyBtn.TextColor3=Color3.fromRGB(255,255,255)
+keyBtn.TextSize=11
+keyBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",keyBtn).CornerRadius=UDim.new(0,4)
+
+-- Modo da tecla (HOLD/TOGGLE)
+local modeLine=Instance.new("Frame",keybindFrame)
+modeLine.Size=UDim2.new(0.9,0,0,30)
+modeLine.Position=UDim2.new(0.05,0,0,65)
+modeLine.BackgroundTransparency=1
+
+local modeLabel=Instance.new("TextLabel",modeLine)
+modeLabel.Size=UDim2.new(0.3,0,1,0)
+modeLabel.BackgroundTransparency=1
+modeLabel.Text="MODO:"
+modeLabel.TextColor3=Color3.fromRGB(200,200,200)
+modeLabel.TextSize=11
+modeLabel.Font=Enum.Font.Gotham
+modeLabel.TextXAlignment=Enum.TextXAlignment.Right
+
+local modeBtn=Instance.new("TextButton",modeLine)
+modeBtn.Size=UDim2.new(0.4,0,0,25)
+modeBtn.Position=UDim2.new(0.35,0,0.5,-12.5)
+modeBtn.BackgroundColor3=Color3.fromRGB(100,50,150)
+modeBtn.Text="TOGGLE"
+modeBtn.TextColor3=Color3.fromRGB(255,255,255)
+modeBtn.TextSize=11
+modeBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",modeBtn).CornerRadius=UDim.new(0,4)
+
+-- ========== SILENT FRAME ==========
+local silentFrame=Instance.new("Frame",container)
+silentFrame.Size=UDim2.new(1,0,1,0)
+silentFrame.BackgroundTransparency=1
+silentFrame.Visible=false
+
+local silentToggle=Instance.new("TextButton",silentFrame)
+silentToggle.Size=UDim2.new(0.8,0,0,35)
+silentToggle.Position=UDim2.new(0.1,0,0,20)
+silentToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
+silentToggle.Text="⚪ ATIVAR SILENT AIM"
+silentToggle.TextColor3=Color3.fromRGB(255,255,255)
+silentToggle.TextSize=12
+silentToggle.Font=Enum.Font.GothamBold
+Instance.new("UICorner",silentToggle).CornerRadius=UDim.new(0,8)
+
+local sdistBox=Instance.new("TextBox",silentFrame)
+sdistBox.Size=UDim2.new(0.3,0,0,30)
+sdistBox.Position=UDim2.new(0.1,0,0,70)
+sdistBox.BackgroundColor3=Color3.fromRGB(20,20,30)
+sdistBox.Text=tostring(a.dist)
+sdistBox.TextColor3=Color3.fromRGB(255,100,100)
+sdistBox.TextSize=12
+Instance.new("UICorner",sdistBox).CornerRadius=UDim.new(0,6)
+
+local sdistLabel=Instance.new("TextLabel",silentFrame)
+sdistLabel.Size=UDim2.new(0.3,0,0,20)
+sdistLabel.Position=UDim2.new(0.1,0,0,100)
+sdistLabel.BackgroundTransparency=1
+sdistLabel.Text="DISTÂNCIA"
+sdistLabel.TextColor3=Color3.fromRGB(200,200,200)
+sdistLabel.TextSize=10
+sdistLabel.Font=Enum.Font.Gotham
+
+local parteBtn=Instance.new("TextButton",silentFrame)
+parteBtn.Size=UDim2.new(0.4,0,0,30)
+parteBtn.Position=UDim2.new(0.5,0,0,70)
+parteBtn.BackgroundColor3=Color3.fromRGB(100,50,150)
+parteBtn.Text="HEAD"
+parteBtn.TextColor3=Color3.fromRGB(255,255,255)
+parteBtn.TextSize=12
+parteBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",parteBtn).CornerRadius=UDim.new(0,6)
+
+local parteLabel=Instance.new("TextLabel",silentFrame)
+parteLabel.Size=UDim2.new(0.4,0,0,20)
+parteLabel.Position=UDim2.new(0.5,0,0,100)
+parteLabel.BackgroundTransparency=1
+parteLabel.Text="PARTE DO CORPO"
+parteLabel.TextColor3=Color3.fromRGB(200,200,200)
+parteLabel.TextSize=10
+parteLabel.Font=Enum.Font.Gotham
+
+-- ========== MAIN FRAME (ESP) ==========
+local mainFrame=Instance.new("Frame",container)
+mainFrame.Size=UDim2.new(1,0,1,0)
+mainFrame.BackgroundTransparency=1
+mainFrame.Visible=false
+
+local espToggle=Instance.new("TextButton",mainFrame)
+espToggle.Size=UDim2.new(0.8,0,0,35)
+espToggle.Position=UDim2.new(0.1,0,0,20)
+espToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
+espToggle.Text="⚪ ATIVAR ESP"
+espToggle.TextColor3=Color3.fromRGB(255,255,255)
+espToggle.TextSize=12
+espToggle.Font=Enum.Font.GothamBold
+Instance.new("UICorner",espToggle).CornerRadius=UDim.new(0,8)
+
+-- Distância do ESP
+local espDistFrame=Instance.new("Frame",mainFrame)
+espDistFrame.Size=UDim2.new(0.8,0,0,50)
+espDistFrame.Position=UDim2.new(0.1,0,0,65)
+espDistFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+espDistFrame.BorderSizePixel=0
+Instance.new("UICorner",espDistFrame).CornerRadius=UDim.new(0,8)
+
+local espDistLabel=Instance.new("TextLabel",espDistFrame)
+espDistLabel.Size=UDim2.new(0.4,0,1,0)
+espDistLabel.BackgroundTransparency=1
+espDistLabel.Text="📏 DIST ESP:"
+espDistLabel.TextColor3=Color3.fromRGB(255,215,0)
+espDistLabel.TextSize=11
+espDistLabel.Font=Enum.Font.GothamBold
+espDistLabel.TextXAlignment=Enum.TextXAlignment.Right
+
+local espDistBox=Instance.new("TextBox",espDistFrame)
+espDistBox.Size=UDim2.new(0.4,0,0,30)
+espDistBox.Position=UDim2.new(0.5,0,0.5,-15)
+espDistBox.BackgroundColor3=Color3.fromRGB(30,30,40)
+espDistBox.Text=tostring(a.espDist)
+espDistBox.TextColor3=Color3.fromRGB(100,255,100)
+espDistBox.TextSize=12
+espDistBox.Font=Enum.Font.Gotham
+Instance.new("UICorner",espDistBox).CornerRadius=UDim.new(0,6)
+
+-- Seleção de Time
+local timeFrame=Instance.new("Frame",mainFrame)
+timeFrame.Size=UDim2.new(0.8,0,0,100)
+timeFrame.Position=UDim2.new(0.1,0,0,125)
+timeFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+timeFrame.BorderSizePixel=0
+Instance.new("UICorner",timeFrame).CornerRadius=UDim.new(0,8)
+
+local timeTitle=Instance.new("TextLabel",timeFrame)
+timeTitle.Size=UDim2.new(1,0,0,25)
+timeTitle.BackgroundTransparency=1
+timeTitle.Text="🎭 SELEÇÃO DE TIME"
+timeTitle.TextColor3=Color3.fromRGB(255,215,0)
+timeTitle.TextSize=12
+timeTitle.Font=Enum.Font.GothamBold
+
+local mBtn=Instance.new("TextButton",timeFrame)
+mBtn.Size=UDim2.new(0.4,-5,0,25)
+mBtn.Position=UDim2.new(0.05,0,0,30)
+mBtn.BackgroundColor3=Color3.fromRGB(0,100,200)
+mBtn.Text="MARINHA"
+mBtn.TextColor3=Color3.fromRGB(255,255,255)
+mBtn.TextSize=10
+mBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",mBtn).CornerRadius=UDim.new(0,5)
+
+local pBtn=Instance.new("TextButton",timeFrame)
+pBtn.Size=UDim2.new(0.4,-5,0,25)
+pBtn.Position=UDim2.new(0.55,0,0,30)
+pBtn.BackgroundColor3=Color3.fromRGB(200,50,50)
+pBtn.Text="PIRATA"
+pBtn.TextColor3=Color3.fromRGB(255,255,255)
+pBtn.TextSize=10
+pBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",pBtn).CornerRadius=UDim.new(0,5)
+
+local nBtn=Instance.new("TextButton",timeFrame)
+nBtn.Size=UDim2.new(0.8,0,0,25)
+nBtn.Position=UDim2.new(0.1,0,0,65)
+nBtn.BackgroundColor3=Color3.fromRGB(100,100,100)
+nBtn.Text="NEUTRO"
+nBtn.TextColor3=Color3.fromRGB(255,255,255)
+nBtn.TextSize=10
+nBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",nBtn).CornerRadius=UDim.new(0,5)
+
+-- Info Players
+local infoFrame=Instance.new("Frame",mainFrame)
+infoFrame.Size=UDim2.new(0.8,0,0,70)
+infoFrame.Position=UDim2.new(0.1,0,0,235)
+infoFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+infoFrame.BorderSizePixel=0
+Instance.new("UICorner",infoFrame).CornerRadius=UDim.new(0,8)
+
+local playersLabel=Instance.new("TextLabel",infoFrame)
+playersLabel.Size=UDim2.new(1,0,0,25)
+playersLabel.BackgroundTransparency=1
+playersLabel.Text="👥 JOGADORES: 0"
+playersLabel.TextColor3=Color3.fromRGB(255,255,255)
+playersLabel.TextSize=12
+playersLabel.Font=Enum.Font.GothamBold
+
+local espCountLabel=Instance.new("TextLabel",infoFrame)
+espCountLabel.Size=UDim2.new(1,0,0,20)
+espCountLabel.Position=UDim2.new(0,0,0,25)
+espCountLabel.BackgroundTransparency=1
+espCountLabel.Text="📡 ESP ATIVO: 0"
+espCountLabel.TextColor3=Color3.fromRGB(100,255,100)
+espCountLabel.TextSize=11
+espCountLabel.Font=Enum.Font.Gotham
+
+local renderLabel=Instance.new("TextLabel",infoFrame)
+renderLabel.Size=UDim2.new(1,0,0,20)
+renderLabel.Position=UDim2.new(0,0,0,45)
+renderLabel.BackgroundTransparency=1
+renderLabel.Text="🎮 RENDERIZANDO: 0"
+renderLabel.TextColor3=Color3.fromRGB(255,255,100)
+renderLabel.TextSize=11
+renderLabel.Font=Enum.Font.Gotham
+
+-- STATUS
+local status=Instance.new("TextLabel",main)
+status.Size=UDim2.new(1,-20,0,25)
+status.Position=UDim2.new(0,10,1,-30)
+status.BackgroundColor3=Color3.fromRGB(0,0,0)
+status.BackgroundTransparency=0.3
+status.Text="STATUS: PRONTO • F6 • PARTE: HEAD"
+status.TextColor3=Color3.fromRGB(0,255,0)
+status.TextSize=10
+status.Font=Enum.Font.Gotham
+Instance.new("UICorner",status).CornerRadius=UDim.new(0,6)
+
+-- ========== FUNÇÕES DE MUDANÇA DE ABA ==========
+aimTab.MouseButton1Click:Connect(function()
+    aimTab.BackgroundColor3=Color3.fromRGB(0,150,200)
+    silentTab.BackgroundColor3=Color3.fromRGB(200,50,150)
+    mainTab.BackgroundColor3=Color3.fromRGB(100,200,50)
+    aimFrame.Visible=true
+    silentFrame.Visible=false
+    mainFrame.Visible=false
+    currentTab="AIMBOT"
+end)
+
+silentTab.MouseButton1Click:Connect(function()
+    aimTab.BackgroundColor3=Color3.fromRGB(100,100,100)
+    silentTab.BackgroundColor3=Color3.fromRGB(200,50,150)
+    mainTab.BackgroundColor3=Color3.fromRGB(100,100,100)
+    aimFrame.Visible=false
+    silentFrame.Visible=true
+    mainFrame.Visible=false
+    currentTab="SILENT"
+end)
+
+mainTab.MouseButton1Click:Connect(function()
+    aimTab.BackgroundColor3=Color3.fromRGB(100,100,100)
+    silentTab.BackgroundColor3=Color3.fromRGB(100,100,100)
+    mainTab.BackgroundColor3=Color3.fromRGB(100,200,50)
+    aimFrame.Visible=false
+    silentFrame.Visible=false
+    mainFrame.Visible=true
+    currentTab="MAIN"
+end)
+
+-- ========== FUNÇÕES DOS BOTÕES ==========
+aimToggle.MouseButton1Click:Connect(function()
+    a.aim=not a.aim
+    aimToggle.Text=a.aim and "🔵 AIMBOT ATIVADO" or "⚪ ATIVAR AIMBOT"
+    aimToggle.BackgroundColor3=a.aim and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
+    updateStatus()
+end)
+
+silentToggle.MouseButton1Click:Connect(function()
+    a.silent=not a.silent
+    silentToggle.Text=a.silent and "🔵 SILENT ATIVADO" or "⚪ ATIVAR SILENT AIM"
+    silentToggle.BackgroundColor3=a.silent and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
+end)
+
+espToggle.MouseButton1Click:Connect(function()
+    a.esp=not a.esp
+    espToggle.Text=a.esp and "🔵 ESP ATIVADO" or "⚪ ATIVAR ESP"
+    espToggle.BackgroundColor3=a.esp and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
+    updateStatus()
+end)
+
+fovToggle.MouseButton1Click:Connect(function()
+    a.fovCircle=not a.fovCircle
+    fovToggle.Text=a.fovCircle and "⭕ FOV CIRCLE: ATIVADO" or "⭕ FOV CIRCLE: DESATIVADO"
+    fovToggle.BackgroundColor3=a.fovCircle and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,150,150)
+end)
+
+-- SELEÇÃO DE PARTE DO AIMBOT
+local aimPartes={"Head","HumanoidRootPart","Torso"}
+local aimPartIdx=1
+aimPartBtn.MouseButton1Click:Connect(function()
+    aimPartIdx=aimPartIdx%#aimPartes+1
+    a.aimPart=aimPartes[aimPartIdx]
+    aimPartBtn.Text=a.aimPart:upper()
+    updateStatus()
+end)
+
+-- KEYBIND
+local listeningForKey=false
+keyBtn.MouseButton1Click:Connect(function()
+    listeningForKey=true
+    keyBtn.Text="[ ? ]"
+    keyBtn.BackgroundColor3=Color3.fromRGB(255,100,0)
+end)
+
+-- MODO HOLD/TOGGLE
+modeBtn.MouseButton1Click:Connect(function()
+    a.keyMode = a.keyMode == "TOGGLE" and "HOLD" or "TOGGLE"
+    modeBtn.Text = a.keyMode
+    modeBtn.BackgroundColor3 = a.keyMode == "TOGGLE" and Color3.fromRGB(100,50,150) or Color3.fromRGB(150,50,100)
+    updateStatus()
+end)
+
+local keyPressed = false
+local function updateStatus()
+    local modeText = a.keyMode
+    local keyText = tostring(a.keybind):gsub("Enum.KeyCode.","")
+    status.Text = "STATUS: AIM:"..(a.aim and "ON" or "OFF").." ESP:"..(a.esp and "ON" or "OFF").." • PARTE: "..a.aimPart.." • TECLA: "..keyText.." ["..modeText.."]"
+end
+
+ui.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    -- Configurar nova keybind
+    if listeningForKey and input.KeyCode~=Enum.KeyCode.Unknown then
+        a.keybind=input.KeyCode
+        keyBtn.Text="[ "..tostring(input.KeyCode):gsub("Enum.KeyCode.","").." ]"
+        keyBtn.BackgroundColor3=Color3.fromRGB(30,30,40)
+        listeningForKey=false
+        updateStatus()
+    end
+    
+    -- Lógica HOLD/TOGGLE
+    if input.KeyCode == a.keybind then
+        if a.keyMode == "TOGGLE" then
+            a.aim = not a.aim
+            aimToggle.Text=a.aim and "🔵 AIMBOT ATIVADO" or "⚪ ATIVAR AIMBOT"
+            aimToggle.BackgroundColor3=a.aim and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
+        else -- HOLD mode
+            keyPressed = true
+            a.aim = true
+            aimToggle.Text="🔵 AIMBOT ATIVADO [HOLD]"
+            aimToggle.BackgroundColor3=Color3.fromRGB(0,150,0)
+        end
+        updateStatus()
+    end
+    
+    if input.KeyCode==Enum.KeyCode.F6 then
+        main.Visible=not main.Visible
+    end
+end)
+
+ui.InputEnded:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if a.keyMode == "HOLD" and input.KeyCode == a.keybind then
+        keyPressed = false
+        a.aim = false
+        aimToggle.Text="⚪ ATIVAR AIMBOT"
+        aimToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
+        updateStatus()
+    end
+end)
+
+-- CONFIGURAÇÕES
+sensBox.FocusLost:Connect(function() local n=tonumber(sensBox.Text); if n and n>=0.1 and n<=1 then a.sens=n else sensBox.Text=tostring(a.sens) end end)
+distBox.FocusLost:Connect(function() local n=tonumber(distBox.Text); if n and n>=10 then a.dist=n else distBox.Text=tostring(a.dist) end end)
+fovBox.FocusLost:Connect(function() local n=tonumber(fovBox.Text); if n and n>=30 then a.fov=n else fovBox.Text=tostring(a.fov) end end)
+sdistBox.FocusLost:Connect(function() local n=tonumber(sdistBox.Text); if n and n>=10 then a.dist=n else sdistBox.Text=tostring(a.dist) end end)
+espDistBox.FocusLost:Connect(function() local n=tonumber(espDistBox.Text); if n and n>=30 then a.espDist=n else espDistBox.Text=tostring(a.espDist) end end)
+
+parteBtn.MouseButton1Click:Connect(function()
+    local partes={"Head","HumanoidRootPart","Torso"}
+    a.hitpart=partes[(table.find(partes,a.hitpart) or 0)%#partes+1]
+    parteBtn.Text=a.hitpart:upper()
+end)
+
+mBtn.MouseButton1Click:Connect(function() a.team="MARINHA"; updateStatus() end)
+pBtn.MouseButton1Click:Connect(function() a.team="PIRATA"; updateStatus() end)
+nBtn.MouseButton1Click:Connect(function() a.team=""; updateStatus() end)
+
+-- ========== CÍCULO VISÍVEL ==========
+local circleGui=Instance.new("ScreenGui")
+circleGui.Name="CircleCursor"
+circleGui.ResetOnSpawn=false
+circleGui.Parent=guiParent
+circleGui.Enabled=false
+circleGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+circleGui.DisplayOrder=999
+
+local circleContainer=Instance.new("Frame")
+circleContainer.Size=UDim2.new(0,a.fov*2,0,a.fov*2)
+circleContainer.BackgroundTransparency=1
+circleContainer.BorderSizePixel=0
+circleContainer.Parent=circleGui
+
+-- Círculo externo
+local outerCircle=Instance.new("Frame")
+outerCircle.Size=UDim2.new(1,0,1,0)
+outerCircle.BackgroundTransparency=1
+outerCircle.BorderSizePixel=3
+outerCircle.BorderColor3=Color3.fromRGB(0,200,255)
+outerCircle.Parent=circleContainer
+Instance.new("UICorner",outerCircle).CornerRadius=UDim.new(1,0)
+
+-- Círculo interno
+local innerCircle=Instance.new("Frame")
+innerCircle.Size=UDim2.new(0.94,0,0.94,0)
+innerCircle.Position=UDim2.new(0.03,0,0.03,0)
+innerCircle.BackgroundTransparency=1
+innerCircle.BorderSizePixel=2
+innerCircle.BorderColor3=Color3.fromRGB(255,255,255)
+innerCircle.Parent=circleContainer
+Instance.new("UICorner",innerCircle).CornerRadius=UDim.new(1,0)
+
+-- Ponto central
+local centerDot=Instance.new("Frame")
+centerDot.Size=UDim2.new(0,6,0,6)
+centerDot.Position=UDim2.new(0.5,-3,0.5,-3)
+centerDot.BackgroundColor3=Color3.fromRGB(255,255,255)
+centerDot.BorderSizePixel=0
+centerDot.Parent=circleContainer
+Instance.new("UICorner",centerDot).CornerRadius=UDim.new(1,0)
+
+-- Linhas de mira
+local hLine=Instance.new("Frame")
+hLine.Size=UDim2.new(1.2,0,0,2)
+hLine.Position=UDim2.new(-0.1,0,0.5,-1)
+hLine.BackgroundColor3=Color3.fromRGB(0,200,255)
+hLine.BackgroundTransparency=0.5
+hLine.BorderSizePixel=0
+hLine.Parent=circleContainer
+
+local vLine=Instance.new("Frame")
+vLine.Size=UDim2.new(0,2,1.2,0)
+vLine.Position=UDim2.new(0.5,-1,-0.1,0)
+vLine.BackgroundColor3=Color3.fromRGB(0,200,255)
+vLine.BackgroundTransparency=0.5
+vLine.BorderSizePixel=0
+vLine.Parent=circleContainer
+
+-- ========== ESP FUNCIONAL ==========
+local espTags={}
+
+local function createESP(pl)
+    if espTags[pl] then return end
+    
+    local bill=Instance.new("BillboardGui")
+    bill.Name="ESP_"..pl.Name
+    bill.Size=UDim2.new(0,120,0,35)
+    bill.StudsOffset=Vector3.new(0,2.5,0)
+    bill.AlwaysOnTop=true
+    bill.Enabled=false
+    bill.Parent=guiParent
+    
+    local bg=Instance.new("Frame",bill)
+    bg.Size=UDim2.new(1,0,1,0)
+    bg.BackgroundColor3=Color3.fromRGB(0,0,0)
+    bg.BackgroundTransparency=0.2
+    bg.BorderSizePixel=0
+    Instance.new("UICorner",bg).CornerRadius=UDim.new(0,6)
+    
+    local nameLabel=Instance.new("TextLabel",bg)
+    nameLabel.Size=UDim2.new(1,0,0.6,0)
+    nameLabel.Position=UDim2.new(0,0,0,0)
+    nameLabel.BackgroundTransparency=1
+    nameLabel.Text=pl.Name
+    nameLabel.TextColor3=Color3.fromRGB(255,255,255)
+    nameLabel.TextSize=13
+    nameLabel.Font=Enum.Font.GothamBold
+    
+    local distLabel=Instance.new("TextLabel",bg)
+    distLabel.Size=UDim2.new(1,0,0.4,0)
+    distLabel.Position=UDim2.new(0,0,0.6,0)
+    distLabel.BackgroundTransparency=1
+    distLabel.Text="0m"
+    distLabel.TextColor3=Color3.fromRGB(100,255,100)
+    distLabel.TextSize=11
+    distLabel.Font=Enum.Font.Gotham
+    
+    espTags[pl]={bill=bill,name=nameLabel,dist=distLabel}
+end
+
+for _,pl in ipairs(p:GetPlayers()) do
+    if pl~=lp then createESP(pl) end
+end
+
+p.PlayerAdded:Connect(createESP)
+p.PlayerRemoving:Connect(function(pl)
+    if espTags[pl] then
+        espTags[pl].bill:Destroy()
+        espTags[pl]=nil
+    end
+end)
+
+-- ========== FUNÇÕES DE UTILIDADE ==========
+local function isAlly(pl)
+    if a.team=="" then return false end
+    local name=pl.Name:lower()
+    if a.team=="MARINHA" and (name:find("marine") or name:find("marinha") or name:find("soldado")) then return true end
+    if a.team=="PIRATA" and (name:find("pirata") or name:find("pirate") or name:find("bandit")) then return true end
+    return false
+end
+
+local function getTargets()
+    local targets={}
+    local cameraPos=cam.CFrame.Position
+    local mousePos=Vector2.new(mouse.X, mouse.Y)
+    
+    for _,pl in ipairs(p:GetPlayers())do
+        if pl~=lp and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health>0 then
+            if not isAlly(pl) then
+                local root=pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Torso")
+                if root then
+                    local rootPos=root.Position
+                    local dist3D=(rootPos-cameraPos).Magnitude
+                    
+                    if dist3D<=a.dist then
+                        local screenPos, onScreen=cam:WorldToViewportPoint(rootPos)
+                        
+                        if onScreen then
+                            local targetPos=Vector2.new(screenPos.X, screenPos.Y)
+                            local distFromMouse=(targetPos-mousePos).Magnitude
+                            
+                            if distFromMouse<=a.fov then
+                                table.insert(targets,{
+                                    pl=pl,
+                                    root=root,
+                                    dist2D=distFromMouse,
+                                    dist3D=dist3D,
+                                    screenPos=targetPos
+                                })
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    table.sort(targets, function(x,y) return x.dist2D<y.dist2D end)
+    return targets
+end
+
+local function getESPPlayers()
+    local players={}
+    local cameraPos=cam.CFrame.Position
+    
+    for _,pl in ipairs(p:GetPlayers())do
+        if pl~=lp and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health>0 then
+            local root=pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Torso")
+            if root then
+                local dist3D=(root.Position-cameraPos).Magnitude
+                if dist3D<=a.espDist then
+                    table.insert(players,{pl=pl,root=root,dist=dist3D})
+                end
+            end
+        end
+    end
+    
+    return players
+end
+
+-- ========== LOOP PRINCIPAL ==========
+rs.RenderStepped:Connect(function()
+    -- Atualiza círculo
+    if a.aim and a.fovCircle then
+        circleGui.Enabled=true
+        local mousePos=Vector2.new(mouse.X, mouse.Y)
+        local viewport=cam.ViewportSize
+        
+        local x = mousePos.X - a.fov
+        local y = mousePos.Y - a.fov
+        
+        x = math.max(0, math.min(x, viewport.X - a.fov*2))
+        y = math.max(0, math.min(y, viewport.Y - a.fov*2))
+        
+        circleContainer.Position=UDim2.new(0,x,0,y)
+        circleContainer.Size=UDim2.new(0,a.fov*2,0,a.fov*2)
+        
+        local targets=getTargets()
+        if #targets>0 then
+            outerCircle.BorderColor3=Color3.fromRGB(255,100,100)
+            hLine.BackgroundColor3=Color3.fromRGB(255,100,100)
+            vLine.BackgroundColor3=Color3.fromRGB(255,100,100)
+            centerDot.BackgroundColor3=Color3.fromRGB(255,100,100)
+        else
+            outerCircle.BorderColor3=Color3.fromRGB(0,200,255)
+            hLine.BackgroundColor3=Color3.fromRGB(0,200,255)
+            vLine.BackgroundColor3=Color3.fromRGB(0,200,255)
+            centerDot.BackgroundColor3=Color3.fromRGB(255,255,255)
+        end
+    else
+        circleGui.Enabled=false
+    end
+    
+    -- AIMBOT COM SELEÇÃO DE PARTE
+    if a.aim then
+        local targets=getTargets()
+        if #targets>0 then
+            local parte = targets[1].pl.Character:FindFirstChild(a.aimPart) or targets[1].root
+            if parte then
+                cam.CFrame = CFrame.lookAt(cam.CFrame.Position, parte.Position)
+            end
+        end
+    end
+    
+    -- ESP
+    if a.esp then
+        local espPlayers=getESPPlayers()
+        local espCount=0
+        
+        for _,data in ipairs(espPlayers) do
+            local esp=espTags[data.pl]
+            if esp and data.root then
+                local screenPos, onScreen=cam:WorldToViewportPoint(data.root.Position)
+                
+                if onScreen then
+                    esp.bill.Adornee=data.root
+                    esp.bill.Enabled=true
+                    espCount=espCount+1
+                    
+                    local ally=isAlly(data.pl)
+                    esp.name.TextColor3=ally and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,100,100)
+                    esp.name.Text=ally and "🟢 "..data.pl.Name or "🔴 "..data.pl.Name
+                    esp.dist.Text=math.floor(data.dist).."m"
+                    esp.dist.TextColor3=ally and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,100,100)
+                else
+                    esp.bill.Enabled=false
+                end
+            end
+        end
+        
+        for pl,esp in pairs(espTags) do
+            local found=false
+            for _,data in ipairs(espPlayers) do
+                if data.pl==pl then found=true break end
+            end
+            if not found then
+                esp.bill.Enabled=false
+            end
+        end
+        
+        playersLabel.Text="👥 JOGADORES: "..#p:GetPlayers()
+        espCountLabel.Text="📡 ESP ATIVO: "..#espPlayers
+        renderLabel.Text="🎮 RENDERIZANDO: "..espCount
+    else
+        for _,esp in pairs(espTags) do
+            esp.bill.Enabled=false
+        end
+    end
+end)
+
+-- Inicialização
+updateStatus()
+print("✅ ZEKYO HUB V5 - SELEÇÃO DE PARTE CARREGADO!")
+print("🎯 Partes: HEAD • HUMANOIDROOTPART • TORSO")
+print("🔑 Clique no botão para alternar")
