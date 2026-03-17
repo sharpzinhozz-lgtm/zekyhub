@@ -1,8 +1,9 @@
--- ZEKYO HUB V5 - SILENT AIM + AIMBOT MESMO ALVO
+-- ZEKYO HUB V5 - AIMBOT COM LOCK-ON (NÃO TROCA DE ALVO)
 local p=game:GetService("Players");local rs=game:GetService("RunService");local lp=p.LocalPlayer;local cam=workspace.CurrentCamera;local ui=game:GetService("UserInputService");local mouse=lp:GetMouse()
-local a={aim=false,silent=false,esp=false,dist=80,sens=1.0,fov=150,espDist=150,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE"}
+local a={aim=false,silent=false,esp=false,dist=80,sens=1.0,fov=150,espDist=150,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE",lockMode=true}
 local currentTab="AIMBOT"
-local currentTarget = nil -- VARIÁVEL PARA ARMAZENAR O ALVO ATUAL
+local currentTarget = nil -- ALVO ATUAL
+local lockTimer = 0 -- TEMPORIZADOR PARA LOCK
 
 -- FUNÇÃO PARA CRIAR GUI
 local function createGui()
@@ -34,8 +35,8 @@ g.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
 g.DisplayOrder=999
 
 local main=Instance.new("Frame")
-main.Size=UDim2.new(0,350,0,670)
-main.Position=UDim2.new(0.5,-175,0.5,-335)
+main.Size=UDim2.new(0,350,0,700)
+main.Position=UDim2.new(0.5,-175,0.5,-350)
 main.BackgroundColor3=Color3.fromRGB(8,8,18)
 main.BorderSizePixel=0
 main.Active=true
@@ -70,7 +71,7 @@ local subtitle=Instance.new("TextLabel",top)
 subtitle.Size=UDim2.new(1,0,0.3,0)
 subtitle.Position=UDim2.new(0,0,0.6,0)
 subtitle.BackgroundTransparency=1
-subtitle.Text="⚡ SILENT + AIMBOT MESMO ALVO ⚡"
+subtitle.Text="⚡ LOCK-ON ⚡"
 subtitle.TextColor3=Color3.fromRGB(255,255,200)
 subtitle.TextSize=12
 subtitle.Font=Enum.Font.Gotham
@@ -113,7 +114,7 @@ Instance.new("UICorner",mainTab).CornerRadius=UDim.new(0,10)
 
 -- CONTAINER DAS ABAS
 local container=Instance.new("Frame",main)
-container.Size=UDim2.new(1,-20,0,480)
+container.Size=UDim2.new(1,-20,0,510)
 container.Position=UDim2.new(0,10,0,130)
 container.BackgroundColor3=Color3.fromRGB(15,15,25)
 container.BorderSizePixel=0
@@ -234,10 +235,37 @@ aimPartBtn.TextSize=12
 aimPartBtn.Font=Enum.Font.GothamBold
 Instance.new("UICorner",aimPartBtn).CornerRadius=UDim.new(0,4)
 
+-- MODO DE LOCK
+local lockFrame=Instance.new("Frame",aimFrame)
+lockFrame.Size=UDim2.new(0.8,0,0,50)
+lockFrame.Position=UDim2.new(0.1,0,0,245)
+lockFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+lockFrame.BorderSizePixel=0
+Instance.new("UICorner",lockFrame).CornerRadius=UDim.new(0,8)
+
+local lockLabel=Instance.new("TextLabel",lockFrame)
+lockLabel.Size=UDim2.new(0.3,0,1,0)
+lockLabel.BackgroundTransparency=1
+lockLabel.Text="🔒 LOCK:"
+lockLabel.TextColor3=Color3.fromRGB(255,215,0)
+lockLabel.TextSize=11
+lockLabel.Font=Enum.Font.GothamBold
+lockLabel.TextXAlignment=Enum.TextXAlignment.Right
+
+local lockBtn=Instance.new("TextButton",lockFrame)
+lockBtn.Size=UDim2.new(0.4,0,0,30)
+lockBtn.Position=UDim2.new(0.35,0,0.5,-15)
+lockBtn.BackgroundColor3=Color3.fromRGB(0,150,0)
+lockBtn.Text="ATIVADO"
+lockBtn.TextColor3=Color3.fromRGB(255,255,255)
+lockBtn.TextSize=12
+lockBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",lockBtn).CornerRadius=UDim.new(0,4)
+
 -- FOV Circle toggle
 local fovToggle=Instance.new("TextButton",aimFrame)
 fovToggle.Size=UDim2.new(0.8,0,0,25)
-fovToggle.Position=UDim2.new(0.1,0,0,245)
+fovToggle.Position=UDim2.new(0.1,0,0,300)
 fovToggle.BackgroundColor3=Color3.fromRGB(0,150,0)
 fovToggle.Text="⭕ FOV CIRCLE: ATIVADO"
 fovToggle.TextColor3=Color3.fromRGB(255,255,255)
@@ -248,7 +276,7 @@ Instance.new("UICorner",fovToggle).CornerRadius=UDim.new(0,6)
 -- KEYBIND SETTINGS
 local keybindFrame=Instance.new("Frame",aimFrame)
 keybindFrame.Size=UDim2.new(0.8,0,0,90)
-keybindFrame.Position=UDim2.new(0.1,0,0,275)
+keybindFrame.Position=UDim2.new(0.1,0,0,330)
 keybindFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
 keybindFrame.BorderSizePixel=0
 Instance.new("UICorner",keybindFrame).CornerRadius=UDim.new(0,8)
@@ -493,7 +521,7 @@ status.Size=UDim2.new(1,-20,0,25)
 status.Position=UDim2.new(0,10,1,-30)
 status.BackgroundColor3=Color3.fromRGB(0,0,0)
 status.BackgroundTransparency=0.3
-status.Text="STATUS: PRONTO • F6 • PARTE: HEAD"
+status.Text="STATUS: PRONTO • F6 • LOCK: ON"
 status.TextColor3=Color3.fromRGB(0,255,0)
 status.TextSize=10
 status.Font=Enum.Font.Gotham
@@ -558,6 +586,15 @@ fovToggle.MouseButton1Click:Connect(function()
     fovToggle.BackgroundColor3=a.fovCircle and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,150,150)
 end)
 
+-- MODO LOCK
+lockBtn.MouseButton1Click:Connect(function()
+    a.lockMode = not a.lockMode
+    lockBtn.Text = a.lockMode and "ATIVADO" or "DESATIVADO"
+    lockBtn.BackgroundColor3 = a.lockMode and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
+    if not a.lockMode then currentTarget = nil end
+    updateStatus()
+end)
+
 -- SELEÇÃO DE PARTE DO AIMBOT
 local aimPartes={"Head","HumanoidRootPart","Torso"}
 local aimPartIdx=1
@@ -588,13 +625,12 @@ local keyPressed = false
 local function updateStatus()
     local modeText = a.keyMode
     local keyText = tostring(a.keybind):gsub("Enum.KeyCode.","")
-    status.Text = "STATUS: AIM:"..(a.aim and "ON" or "OFF").." ESP:"..(a.esp and "ON" or "OFF").." • PARTE: "..a.aimPart.." • TECLA: "..keyText.." ["..modeText.."]"
+    status.Text = "STATUS: AIM:"..(a.aim and "ON" or "OFF").." ESP:"..(a.esp and "ON" or "OFF").." • LOCK:"..(a.lockMode and "ON" or "OFF").." • TECLA: "..keyText.." ["..modeText.."]"
 end
 
 ui.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
-    -- Configurar nova keybind
     if listeningForKey and input.KeyCode~=Enum.KeyCode.Unknown then
         a.keybind=input.KeyCode
         keyBtn.Text="[ "..tostring(input.KeyCode):gsub("Enum.KeyCode.","").." ]"
@@ -603,14 +639,13 @@ ui.InputBegan:Connect(function(input, gameProcessed)
         updateStatus()
     end
     
-    -- Lógica HOLD/TOGGLE
     if input.KeyCode == a.keybind then
         if a.keyMode == "TOGGLE" then
             a.aim = not a.aim
             aimToggle.Text=a.aim and "🔵 AIMBOT ATIVADO" or "⚪ ATIVAR AIMBOT"
             aimToggle.BackgroundColor3=a.aim and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
             if not a.aim then currentTarget = nil end
-        else -- HOLD mode
+        else
             keyPressed = true
             a.aim = true
             aimToggle.Text="🔵 AIMBOT ATIVADO [HOLD]"
@@ -836,7 +871,7 @@ local function getESPPlayers()
     return players
 end
 
--- ========== LOOP PRINCIPAL ==========
+-- ========== LOOP PRINCIPAL COM LOCK-ON ==========
 rs.RenderStepped:Connect(function()
     -- Atualiza círculo
     if a.aim and a.fovCircle then
@@ -869,20 +904,65 @@ rs.RenderStepped:Connect(function()
         circleGui.Enabled=false
     end
     
-    -- AIMBOT - Guarda o alvo atual
+    -- AIMBOT COM LOCK-ON (NÃO TROCA DE ALVO)
     if a.aim then
         local targets=getTargets()
-        if #targets>0 then
+        
+        if a.lockMode and currentTarget then
+            -- Verifica se o alvo atual ainda é válido
+            local targetStillValid = false
+            local targetPart = nil
+            
+            if currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid") and currentTarget.Character.Humanoid.Health>0 and not isAlly(currentTarget) then
+                local root = currentTarget.Character:FindFirstChild("HumanoidRootPart") or currentTarget.Character:FindFirstChild("Torso")
+                if root then
+                    local dist3D = (root.Position - cam.CFrame.Position).Magnitude
+                    if dist3D <= a.dist then
+                        local screenPos, onScreen = cam:WorldToViewportPoint(root.Position)
+                        if onScreen then
+                            local mousePos = Vector2.new(mouse.X, mouse.Y)
+                            local targetPos = Vector2.new(screenPos.X, screenPos.Y)
+                            local distFromMouse = (targetPos - mousePos).Magnitude
+                            if distFromMouse <= a.fov then
+                                targetStillValid = true
+                                targetPart = currentTarget.Character:FindFirstChild(a.aimPart) or root
+                            end
+                        end
+                    end
+                end
+            end
+            
+            if targetStillValid and targetPart then
+                -- Continua mirando no mesmo alvo
+                local cameraPos = cam.CFrame.Position
+                local targetPos = targetPart.Position
+                local direction = (targetPos - cameraPos).Unit
+                cam.CFrame = CFrame.new(cameraPos, cameraPos + direction)
+            else
+                -- Perdeu o alvo, procura novo
+                currentTarget = nil
+            end
+        end
+        
+        -- Se não tem alvo ou lock está desligado, pega o melhor alvo
+        if not currentTarget and #targets>0 then
             currentTarget = targets[1].pl
-            local parte = targets[1].pl.Character:FindFirstChild(a.aimPart) or targets[1].root
+        end
+        
+        -- Se tem alvo mas lock está desligado, pode trocar
+        if not a.lockMode and #targets>0 then
+            currentTarget = targets[1].pl
+        end
+        
+        -- Mira no alvo atual se ele existir
+        if currentTarget and currentTarget.Character then
+            local parte = currentTarget.Character:FindFirstChild(a.aimPart) or currentTarget.Character:FindFirstChild("HumanoidRootPart") or currentTarget.Character:FindFirstChild("Torso")
             if parte then
                 local cameraPos = cam.CFrame.Position
                 local targetPos = parte.Position
                 local direction = (targetPos - cameraPos).Unit
                 cam.CFrame = CFrame.new(cameraPos, cameraPos + direction)
             end
-        else
-            currentTarget = nil
         end
     end
     
@@ -890,7 +970,6 @@ rs.RenderStepped:Connect(function()
     if a.silent and currentTarget and currentTarget.Character then
         local parte = currentTarget.Character:FindFirstChild(a.hitpart) or currentTarget.Character:FindFirstChild("HumanoidRootPart")
         if parte then
-            -- Hook no __namecall para modificar os remotes
             if not silentHooked then
                 silentHooked = true
                 local mt = getrawmetatable(game)
@@ -920,7 +999,6 @@ rs.RenderStepped:Connect(function()
                 end
                 
                 setreadonly(mt, true)
-                print("✅ Silent aim hook ativado!")
             end
         end
     end
@@ -976,7 +1054,7 @@ end)
 
 -- Inicialização
 updateStatus()
-print("✅ ZEKYO HUB V5 - SILENT + AIMBOT MESMO ALVO!")
-print("🎯 Aimbot gruda em um alvo")
-print("🤫 Silent aim acerta o MESMO alvo")
-print("🟡 Alvo atual fica AMARELO no ESP")
+print("✅ ZEKYO HUB V5 - LOCK-ON ATIVADO!")
+print("🎯 Aimbot agora TRAVA no mesmo alvo")
+print("🔒 Modo LOCK: ATIVADO (não troca de alvo)")
+print("🟡 Alvo fica AMARELO no ESP")
