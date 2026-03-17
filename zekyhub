@@ -1,9 +1,8 @@
--- ZEKYO HUB V5 - AIMBOT COM LOCK-ON (NÃO TROCA DE ALVO)
+-- ZEKYO HUB V5 - AIMBOT FUNCIONA EM TODAS DISTÂNCIAS
 local p=game:GetService("Players");local rs=game:GetService("RunService");local lp=p.LocalPlayer;local cam=workspace.CurrentCamera;local ui=game:GetService("UserInputService");local mouse=lp:GetMouse()
-local a={aim=false,silent=false,esp=false,dist=80,sens=1.0,fov=150,espDist=150,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE",lockMode=true}
+local a={aim=false,silent=false,esp=false,dist=999,sens=1.0,fov=150,espDist=999,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE",lockMode=true}
 local currentTab="AIMBOT"
-local currentTarget = nil -- ALVO ATUAL
-local lockTimer = 0 -- TEMPORIZADOR PARA LOCK
+local currentTarget = nil
 
 -- FUNÇÃO PARA CRIAR GUI
 local function createGui()
@@ -71,7 +70,7 @@ local subtitle=Instance.new("TextLabel",top)
 subtitle.Size=UDim2.new(1,0,0.3,0)
 subtitle.Position=UDim2.new(0,0,0.6,0)
 subtitle.BackgroundTransparency=1
-subtitle.Text="⚡ LOCK-ON ⚡"
+subtitle.Text="⚡ DISTÂNCIA INFINITA ⚡"
 subtitle.TextColor3=Color3.fromRGB(255,255,200)
 subtitle.TextSize=12
 subtitle.Font=Enum.Font.Gotham
@@ -521,7 +520,7 @@ status.Size=UDim2.new(1,-20,0,25)
 status.Position=UDim2.new(0,10,1,-30)
 status.BackgroundColor3=Color3.fromRGB(0,0,0)
 status.BackgroundTransparency=0.3
-status.Text="STATUS: PRONTO • F6 • LOCK: ON"
+status.Text="STATUS: PRONTO • F6 • DIST: INFINITA"
 status.TextColor3=Color3.fromRGB(0,255,0)
 status.TextSize=10
 status.Font=Enum.Font.Gotham
@@ -625,7 +624,7 @@ local keyPressed = false
 local function updateStatus()
     local modeText = a.keyMode
     local keyText = tostring(a.keybind):gsub("Enum.KeyCode.","")
-    status.Text = "STATUS: AIM:"..(a.aim and "ON" or "OFF").." ESP:"..(a.esp and "ON" or "OFF").." • LOCK:"..(a.lockMode and "ON" or "OFF").." • TECLA: "..keyText.." ["..modeText.."]"
+    status.Text = "STATUS: AIM:"..(a.aim and "ON" or "OFF").." ESP:"..(a.esp and "ON" or "OFF").." • LOCK:"..(a.lockMode and "ON" or "OFF").." • DIST:INFINITA • TECLA: "..keyText.." ["..modeText.."]"
 end
 
 ui.InputBegan:Connect(function(input, gameProcessed)
@@ -674,10 +673,10 @@ end)
 
 -- CONFIGURAÇÕES
 sensBox.FocusLost:Connect(function() local n=tonumber(sensBox.Text); if n and n>=0.1 and n<=1 then a.sens=n else sensBox.Text=tostring(a.sens) end end)
-distBox.FocusLost:Connect(function() local n=tonumber(distBox.Text); if n and n>=10 then a.dist=n else distBox.Text=tostring(a.dist) end end)
+distBox.FocusLost:Connect(function() local n=tonumber(distBox.Text); if n and n>=10 then a.dist=999 else distBox.Text="999" end end)
 fovBox.FocusLost:Connect(function() local n=tonumber(fovBox.Text); if n and n>=30 then a.fov=n else fovBox.Text=tostring(a.fov) end end)
-sdistBox.FocusLost:Connect(function() local n=tonumber(sdistBox.Text); if n and n>=10 then a.dist=n else sdistBox.Text=tostring(a.dist) end end)
-espDistBox.FocusLost:Connect(function() local n=tonumber(espDistBox.Text); if n and n>=30 then a.espDist=n else espDistBox.Text=tostring(a.espDist) end end)
+sdistBox.FocusLost:Connect(function() local n=tonumber(sdistBox.Text); if n and n>=10 then a.dist=999 else sdistBox.Text="999" end end)
+espDistBox.FocusLost:Connect(function() local n=tonumber(espDistBox.Text); if n and n>=30 then a.espDist=999 else espDistBox.Text="999" end end)
 
 parteBtn.MouseButton1Click:Connect(function()
     local partes={"Head","HumanoidRootPart","Torso"}
@@ -825,6 +824,7 @@ local function getTargets()
                     local rootPos=root.Position
                     local dist3D=(rootPos-cameraPos).Magnitude
                     
+                    -- DISTÂNCIA AGORA É 999 (PRATICAMENTE INFINITA)
                     if dist3D<=a.dist then
                         local screenPos, onScreen=cam:WorldToViewportPoint(rootPos)
                         
@@ -871,7 +871,7 @@ local function getESPPlayers()
     return players
 end
 
--- ========== LOOP PRINCIPAL COM LOCK-ON ==========
+-- ========== LOOP PRINCIPAL COM CORREÇÃO DE DISTÂNCIA ==========
 rs.RenderStepped:Connect(function()
     -- Atualiza círculo
     if a.aim and a.fovCircle then
@@ -904,42 +904,39 @@ rs.RenderStepped:Connect(function()
         circleGui.Enabled=false
     end
     
-    -- AIMBOT COM LOCK-ON (NÃO TROCA DE ALVO)
+    -- AIMBOT CORRIGIDO PARA TODAS DISTÂNCIAS
     if a.aim then
         local targets=getTargets()
         
         if a.lockMode and currentTarget then
-            -- Verifica se o alvo atual ainda é válido
+            -- Verifica se o alvo atual ainda é válido (IGNORANDO DISTÂNCIA)
             local targetStillValid = false
             local targetPart = nil
             
             if currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid") and currentTarget.Character.Humanoid.Health>0 and not isAlly(currentTarget) then
                 local root = currentTarget.Character:FindFirstChild("HumanoidRootPart") or currentTarget.Character:FindFirstChild("Torso")
                 if root then
-                    local dist3D = (root.Position - cam.CFrame.Position).Magnitude
-                    if dist3D <= a.dist then
-                        local screenPos, onScreen = cam:WorldToViewportPoint(root.Position)
-                        if onScreen then
-                            local mousePos = Vector2.new(mouse.X, mouse.Y)
-                            local targetPos = Vector2.new(screenPos.X, screenPos.Y)
-                            local distFromMouse = (targetPos - mousePos).Magnitude
-                            if distFromMouse <= a.fov then
-                                targetStillValid = true
-                                targetPart = currentTarget.Character:FindFirstChild(a.aimPart) or root
-                            end
+                    local screenPos, onScreen = cam:WorldToViewportPoint(root.Position)
+                    if onScreen then
+                        local mousePos = Vector2.new(mouse.X, mouse.Y)
+                        local targetPos = Vector2.new(screenPos.X, screenPos.Y)
+                        local distFromMouse = (targetPos - mousePos).Magnitude
+                        if distFromMouse <= a.fov then
+                            targetStillValid = true
+                            targetPart = currentTarget.Character:FindFirstChild(a.aimPart) or root
                         end
                     end
                 end
             end
             
             if targetStillValid and targetPart then
-                -- Continua mirando no mesmo alvo
+                -- Continua mirando no mesmo alvo (QUALQUER DISTÂNCIA)
                 local cameraPos = cam.CFrame.Position
                 local targetPos = targetPart.Position
                 local direction = (targetPos - cameraPos).Unit
                 cam.CFrame = CFrame.new(cameraPos, cameraPos + direction)
             else
-                -- Perdeu o alvo, procura novo
+                -- Perdeu o alvo (morreu ou saiu da tela)
                 currentTarget = nil
             end
         end
@@ -954,7 +951,7 @@ rs.RenderStepped:Connect(function()
             currentTarget = targets[1].pl
         end
         
-        -- Mira no alvo atual se ele existir
+        -- Mira no alvo atual se ele existir (QUALQUER DISTÂNCIA)
         if currentTarget and currentTarget.Character then
             local parte = currentTarget.Character:FindFirstChild(a.aimPart) or currentTarget.Character:FindFirstChild("HumanoidRootPart") or currentTarget.Character:FindFirstChild("Torso")
             if parte then
@@ -966,7 +963,7 @@ rs.RenderStepped:Connect(function()
         end
     end
     
-    -- SILENT AIM - Usa o MESMO alvo do aimbot
+    -- SILENT AIM
     if a.silent and currentTarget and currentTarget.Character then
         local parte = currentTarget.Character:FindFirstChild(a.hitpart) or currentTarget.Character:FindFirstChild("HumanoidRootPart")
         if parte then
@@ -1054,7 +1051,7 @@ end)
 
 -- Inicialização
 updateStatus()
-print("✅ ZEKYO HUB V5 - LOCK-ON ATIVADO!")
-print("🎯 Aimbot agora TRAVA no mesmo alvo")
-print("🔒 Modo LOCK: ATIVADO (não troca de alvo)")
-print("🟡 Alvo fica AMARELO no ESP")
+print("✅ ZEKYO HUB V5 - AIMBOT FUNCIONA EM TODAS DISTÂNCIAS!")
+print("🎯 PERTO • MÉDIO • LONGE - TUDO FUNCIONA!")
+print("🔒 LOCK-ON: "..(a.lockMode and "ATIVADO" or "DESATIVADO"))
+print("📏 DISTÂNCIA CONFIGURADA PARA 999 (INFINITA)")
