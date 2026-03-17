@@ -1,6 +1,6 @@
--- ZEKYO HUB V5 - AIMBOT FUNCIONA EM TODAS DISTÂNCIAS
+-- ZEKYO HUB V5 - ESP DE FRUTAS + DISTÂNCIA CONFIGURÁVEL
 local p=game:GetService("Players");local rs=game:GetService("RunService");local lp=p.LocalPlayer;local cam=workspace.CurrentCamera;local ui=game:GetService("UserInputService");local mouse=lp:GetMouse()
-local a={aim=false,silent=false,esp=false,dist=999,sens=1.0,fov=150,espDist=999,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE",lockMode=true}
+local a={aim=false,silent=false,esp=false,espFrutas=false,dist=80,sens=1.0,fov=150,espDist=150,frutaDist=150,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE",lockMode=true}
 local currentTab="AIMBOT"
 local currentTarget = nil
 
@@ -34,8 +34,8 @@ g.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
 g.DisplayOrder=999
 
 local main=Instance.new("Frame")
-main.Size=UDim2.new(0,350,0,700)
-main.Position=UDim2.new(0.5,-175,0.5,-350)
+main.Size=UDim2.new(0,350,0,780)
+main.Position=UDim2.new(0.5,-175,0.5,-390)
 main.BackgroundColor3=Color3.fromRGB(8,8,18)
 main.BorderSizePixel=0
 main.Active=true
@@ -70,7 +70,7 @@ local subtitle=Instance.new("TextLabel",top)
 subtitle.Size=UDim2.new(1,0,0.3,0)
 subtitle.Position=UDim2.new(0,0,0.6,0)
 subtitle.BackgroundTransparency=1
-subtitle.Text="⚡ DISTÂNCIA INFINITA ⚡"
+subtitle.Text="⚡ ESP DE FRUTAS ⚡"
 subtitle.TextColor3=Color3.fromRGB(255,255,200)
 subtitle.TextSize=12
 subtitle.Font=Enum.Font.Gotham
@@ -113,7 +113,7 @@ Instance.new("UICorner",mainTab).CornerRadius=UDim.new(0,10)
 
 -- CONTAINER DAS ABAS
 local container=Instance.new("Frame",main)
-container.Size=UDim2.new(1,-20,0,510)
+container.Size=UDim2.new(1,-20,0,590)
 container.Position=UDim2.new(0,10,0,130)
 container.BackgroundColor3=Color3.fromRGB(15,15,25)
 container.BorderSizePixel=0
@@ -397,20 +397,21 @@ mainFrame.Size=UDim2.new(1,0,1,0)
 mainFrame.BackgroundTransparency=1
 mainFrame.Visible=false
 
+-- ESP de Jogadores
 local espToggle=Instance.new("TextButton",mainFrame)
-espToggle.Size=UDim2.new(0.8,0,0,35)
-espToggle.Position=UDim2.new(0.1,0,0,20)
+espToggle.Size=UDim2.new(0.8,0,0,30)
+espToggle.Position=UDim2.new(0.1,0,0,15)
 espToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
 espToggle.Text="⚪ ATIVAR ESP"
 espToggle.TextColor3=Color3.fromRGB(255,255,255)
 espToggle.TextSize=12
 espToggle.Font=Enum.Font.GothamBold
-Instance.new("UICorner",espToggle).CornerRadius=UDim.new(0,8)
+Instance.new("UICorner",espToggle).CornerRadius=UDim.new(0,6)
 
--- Distância do ESP
+-- Distância do ESP de Jogadores
 local espDistFrame=Instance.new("Frame",mainFrame)
 espDistFrame.Size=UDim2.new(0.8,0,0,50)
-espDistFrame.Position=UDim2.new(0.1,0,0,65)
+espDistFrame.Position=UDim2.new(0.1,0,0,50)
 espDistFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
 espDistFrame.BorderSizePixel=0
 Instance.new("UICorner",espDistFrame).CornerRadius=UDim.new(0,8)
@@ -418,7 +419,7 @@ Instance.new("UICorner",espDistFrame).CornerRadius=UDim.new(0,8)
 local espDistLabel=Instance.new("TextLabel",espDistFrame)
 espDistLabel.Size=UDim2.new(0.4,0,1,0)
 espDistLabel.BackgroundTransparency=1
-espDistLabel.Text="📏 DIST ESP:"
+espDistLabel.Text="👤 DIST JOG:"
 espDistLabel.TextColor3=Color3.fromRGB(255,215,0)
 espDistLabel.TextSize=11
 espDistLabel.Font=Enum.Font.GothamBold
@@ -434,10 +435,48 @@ espDistBox.TextSize=12
 espDistBox.Font=Enum.Font.Gotham
 Instance.new("UICorner",espDistBox).CornerRadius=UDim.new(0,6)
 
+-- ESP de Frutas
+local frutaToggle=Instance.new("TextButton",mainFrame)
+frutaToggle.Size=UDim2.new(0.8,0,0,30)
+frutaToggle.Position=UDim2.new(0.1,0,0,105)
+frutaToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
+frutaToggle.Text="🍎 ATIVAR ESP FRUTAS"
+frutaToggle.TextColor3=Color3.fromRGB(255,255,255)
+frutaToggle.TextSize=12
+frutaToggle.Font=Enum.Font.GothamBold
+Instance.new("UICorner",frutaToggle).CornerRadius=UDim.new(0,6)
+
+-- Distância do ESP de Frutas
+local frutaDistFrame=Instance.new("Frame",mainFrame)
+frutaDistFrame.Size=UDim2.new(0.8,0,0,50)
+frutaDistFrame.Position=UDim2.new(0.1,0,0,140)
+frutaDistFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
+frutaDistFrame.BorderSizePixel=0
+Instance.new("UICorner",frutaDistFrame).CornerRadius=UDim.new(0,8)
+
+local frutaDistLabel=Instance.new("TextLabel",frutaDistFrame)
+frutaDistLabel.Size=UDim2.new(0.4,0,1,0)
+frutaDistLabel.BackgroundTransparency=1
+frutaDistLabel.Text="🍎 DIST FRUTA:"
+frutaDistLabel.TextColor3=Color3.fromRGB(255,215,0)
+frutaDistLabel.TextSize=11
+frutaDistLabel.Font=Enum.Font.GothamBold
+frutaDistLabel.TextXAlignment=Enum.TextXAlignment.Right
+
+local frutaDistBox=Instance.new("TextBox",frutaDistFrame)
+frutaDistBox.Size=UDim2.new(0.4,0,0,30)
+frutaDistBox.Position=UDim2.new(0.5,0,0.5,-15)
+frutaDistBox.BackgroundColor3=Color3.fromRGB(30,30,40)
+frutaDistBox.Text=tostring(a.frutaDist)
+frutaDistBox.TextColor3=Color3.fromRGB(255,150,100)
+frutaDistBox.TextSize=12
+frutaDistBox.Font=Enum.Font.Gotham
+Instance.new("UICorner",frutaDistBox).CornerRadius=UDim.new(0,6)
+
 -- Seleção de Time
 local timeFrame=Instance.new("Frame",mainFrame)
 timeFrame.Size=UDim2.new(0.8,0,0,100)
-timeFrame.Position=UDim2.new(0.1,0,0,125)
+timeFrame.Position=UDim2.new(0.1,0,0,200)
 timeFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
 timeFrame.BorderSizePixel=0
 Instance.new("UICorner",timeFrame).CornerRadius=UDim.new(0,8)
@@ -482,8 +521,8 @@ Instance.new("UICorner",nBtn).CornerRadius=UDim.new(0,5)
 
 -- Info Players
 local infoFrame=Instance.new("Frame",mainFrame)
-infoFrame.Size=UDim2.new(0.8,0,0,70)
-infoFrame.Position=UDim2.new(0.1,0,0,235)
+infoFrame.Size=UDim2.new(0.8,0,0,90)
+infoFrame.Position=UDim2.new(0.1,0,0,310)
 infoFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
 infoFrame.BorderSizePixel=0
 Instance.new("UICorner",infoFrame).CornerRadius=UDim.new(0,8)
@@ -500,14 +539,23 @@ local espCountLabel=Instance.new("TextLabel",infoFrame)
 espCountLabel.Size=UDim2.new(1,0,0,20)
 espCountLabel.Position=UDim2.new(0,0,0,25)
 espCountLabel.BackgroundTransparency=1
-espCountLabel.Text="📡 ESP ATIVO: 0"
+espCountLabel.Text="📡 ESP JOG: 0"
 espCountLabel.TextColor3=Color3.fromRGB(100,255,100)
 espCountLabel.TextSize=11
 espCountLabel.Font=Enum.Font.Gotham
 
+local frutaCountLabel=Instance.new("TextLabel",infoFrame)
+frutaCountLabel.Size=UDim2.new(1,0,0,20)
+frutaCountLabel.Position=UDim2.new(0,0,0,45)
+frutaCountLabel.BackgroundTransparency=1
+frutaCountLabel.Text="🍎 ESP FRUTAS: 0"
+frutaCountLabel.TextColor3=Color3.fromRGB(255,150,100)
+frutaCountLabel.TextSize=11
+frutaCountLabel.Font=Enum.Font.Gotham
+
 local renderLabel=Instance.new("TextLabel",infoFrame)
 renderLabel.Size=UDim2.new(1,0,0,20)
-renderLabel.Position=UDim2.new(0,0,0,45)
+renderLabel.Position=UDim2.new(0,0,0,65)
 renderLabel.BackgroundTransparency=1
 renderLabel.Text="🎮 RENDERIZANDO: 0"
 renderLabel.TextColor3=Color3.fromRGB(255,255,100)
@@ -520,7 +568,7 @@ status.Size=UDim2.new(1,-20,0,25)
 status.Position=UDim2.new(0,10,1,-30)
 status.BackgroundColor3=Color3.fromRGB(0,0,0)
 status.BackgroundTransparency=0.3
-status.Text="STATUS: PRONTO • F6 • DIST: INFINITA"
+status.Text="STATUS: PRONTO • F6"
 status.TextColor3=Color3.fromRGB(0,255,0)
 status.TextSize=10
 status.Font=Enum.Font.Gotham
@@ -579,6 +627,13 @@ espToggle.MouseButton1Click:Connect(function()
     updateStatus()
 end)
 
+frutaToggle.MouseButton1Click:Connect(function()
+    a.espFrutas=not a.espFrutas
+    frutaToggle.Text=a.espFrutas and "🍎 ESP FRUTAS ATIVADO" or "🍎 ATIVAR ESP FRUTAS"
+    frutaToggle.BackgroundColor3=a.espFrutas and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
+    updateStatus()
+end)
+
 fovToggle.MouseButton1Click:Connect(function()
     a.fovCircle=not a.fovCircle
     fovToggle.Text=a.fovCircle and "⭕ FOV CIRCLE: ATIVADO" or "⭕ FOV CIRCLE: DESATIVADO"
@@ -624,7 +679,7 @@ local keyPressed = false
 local function updateStatus()
     local modeText = a.keyMode
     local keyText = tostring(a.keybind):gsub("Enum.KeyCode.","")
-    status.Text = "STATUS: AIM:"..(a.aim and "ON" or "OFF").." ESP:"..(a.esp and "ON" or "OFF").." • LOCK:"..(a.lockMode and "ON" or "OFF").." • DIST:INFINITA • TECLA: "..keyText.." ["..modeText.."]"
+    status.Text = "STATUS: AIM:"..(a.aim and "ON" or "OFF").." ESP:"..(a.esp and "ON" or "OFF").." FRUTA:"..(a.espFrutas and "ON" or "OFF").." • TECLA: "..keyText.." ["..modeText.."]"
 end
 
 ui.InputBegan:Connect(function(input, gameProcessed)
@@ -671,12 +726,13 @@ ui.InputEnded:Connect(function(input, gameProcessed)
     end
 end)
 
--- CONFIGURAÇÕES
+-- CONFIGURAÇÕES DE DISTÂNCIA
 sensBox.FocusLost:Connect(function() local n=tonumber(sensBox.Text); if n and n>=0.1 and n<=1 then a.sens=n else sensBox.Text=tostring(a.sens) end end)
-distBox.FocusLost:Connect(function() local n=tonumber(distBox.Text); if n and n>=10 then a.dist=999 else distBox.Text="999" end end)
-fovBox.FocusLost:Connect(function() local n=tonumber(fovBox.Text); if n and n>=30 then a.fov=n else fovBox.Text=tostring(a.fov) end end)
-sdistBox.FocusLost:Connect(function() local n=tonumber(sdistBox.Text); if n and n>=10 then a.dist=999 else sdistBox.Text="999" end end)
-espDistBox.FocusLost:Connect(function() local n=tonumber(espDistBox.Text); if n and n>=30 then a.espDist=999 else espDistBox.Text="999" end end)
+distBox.FocusLost:Connect(function() local n=tonumber(distBox.Text); if n and n>=10 and n<=999 then a.dist=n else distBox.Text=tostring(a.dist) end end)
+fovBox.FocusLost:Connect(function() local n=tonumber(fovBox.Text); if n and n>=30 and n<=500 then a.fov=n else fovBox.Text=tostring(a.fov) end end)
+sdistBox.FocusLost:Connect(function() local n=tonumber(sdistBox.Text); if n and n>=10 and n<=999 then a.dist=n else sdistBox.Text=tostring(a.dist) end end)
+espDistBox.FocusLost:Connect(function() local n=tonumber(espDistBox.Text); if n and n>=30 and n<=999 then a.espDist=n else espDistBox.Text=tostring(a.espDist) end end)
+frutaDistBox.FocusLost:Connect(function() local n=tonumber(frutaDistBox.Text); if n and n>=30 and n<=999 then a.frutaDist=n else frutaDistBox.Text=tostring(a.frutaDist) end end)
 
 parteBtn.MouseButton1Click:Connect(function()
     local partes={"Head","HumanoidRootPart","Torso"}
@@ -748,7 +804,7 @@ vLine.BackgroundTransparency=0.5
 vLine.BorderSizePixel=0
 vLine.Parent=circleContainer
 
--- ========== ESP FUNCIONAL ==========
+-- ========== ESP DE JOGADORES ==========
 local espTags={}
 
 local function createESP(pl)
@@ -802,6 +858,62 @@ p.PlayerRemoving:Connect(function(pl)
     end
 end)
 
+-- ========== ESP DE FRUTAS ==========
+local frutaTags={}
+
+local function criarESPFruta(obj)
+    if frutaTags[obj] then return end
+    
+    -- Verifica se é uma fruta (ajuste conforme o jogo)
+    local nome = obj.Name:lower()
+    if not (nome:find("fruit") or nome:find("fruta") or nome:find("apple") or nome:find("banana") or nome:find("magu") or nome:find("gomu") or nome:find("mera")) then
+        return
+    end
+    
+    local bill=Instance.new("BillboardGui")
+    bill.Name="FrutaESP_"..obj.Name
+    bill.Size=UDim2.new(0,80,0,30)
+    bill.StudsOffset=Vector3.new(0,1,0)
+    bill.AlwaysOnTop=true
+    bill.Enabled=false
+    bill.Parent=guiParent
+    
+    local bg=Instance.new("Frame",bill)
+    bg.Size=UDim2.new(1,0,1,0)
+    bg.BackgroundColor3=Color3.fromRGB(255,100,50)
+    bg.BackgroundTransparency=0.2
+    bg.BorderSizePixel=0
+    Instance.new("UICorner",bg).CornerRadius=UDim.new(0,6)
+    
+    local nameLabel=Instance.new("TextLabel",bg)
+    nameLabel.Size=UDim2.new(1,0,0.6,0)
+    nameLabel.Position=UDim2.new(0,0,0,0)
+    nameLabel.BackgroundTransparency=1
+    nameLabel.Text="🍎 FRUTA"
+    nameLabel.TextColor3=Color3.fromRGB(255,255,255)
+    nameLabel.TextSize=11
+    nameLabel.Font=Enum.Font.GothamBold
+    
+    local distLabel=Instance.new("TextLabel",bg)
+    distLabel.Size=UDim2.new(1,0,0.4,0)
+    distLabel.Position=UDim2.new(0,0,0.6,0)
+    distLabel.BackgroundTransparency=1
+    distLabel.Text="0m"
+    distLabel.TextColor3=Color3.fromRGB(255,255,255)
+    distLabel.TextSize=10
+    distLabel.Font=Enum.Font.Gotham
+    
+    frutaTags[obj]=bill
+end
+
+-- Scan inicial de frutas
+for _,v in ipairs(workspace:GetDescendants()) do
+    criarESPFruta(v)
+end
+
+-- Detectar novas frutas
+workspace.DescendantAdded:Connect(criarESPFruta)
+
 -- ========== FUNÇÕES DE UTILIDADE ==========
 local function isAlly(pl)
     if a.team=="" then return false end
@@ -824,7 +936,6 @@ local function getTargets()
                     local rootPos=root.Position
                     local dist3D=(rootPos-cameraPos).Magnitude
                     
-                    -- DISTÂNCIA AGORA É 999 (PRATICAMENTE INFINITA)
                     if dist3D<=a.dist then
                         local screenPos, onScreen=cam:WorldToViewportPoint(rootPos)
                         
@@ -871,7 +982,23 @@ local function getESPPlayers()
     return players
 end
 
--- ========== LOOP PRINCIPAL COM CORREÇÃO DE DISTÂNCIA ==========
+local function getFrutasProximas()
+    local frutas={}
+    local cameraPos=cam.CFrame.Position
+    
+    for obj,bill in pairs(frutaTags) do
+        if obj and obj.Parent then
+            local dist3D=(obj.Position-cameraPos).Magnitude
+            if dist3D<=a.frutaDist then
+                table.insert(frutas,{obj=obj,bill=bill,dist=dist3D})
+            end
+        end
+    end
+    
+    return frutas
+end
+
+-- ========== LOOP PRINCIPAL ==========
 rs.RenderStepped:Connect(function()
     -- Atualiza círculo
     if a.aim and a.fovCircle then
@@ -904,12 +1031,11 @@ rs.RenderStepped:Connect(function()
         circleGui.Enabled=false
     end
     
-    -- AIMBOT CORRIGIDO PARA TODAS DISTÂNCIAS
+    -- AIMBOT COM LOCK-ON
     if a.aim then
         local targets=getTargets()
         
         if a.lockMode and currentTarget then
-            -- Verifica se o alvo atual ainda é válido (IGNORANDO DISTÂNCIA)
             local targetStillValid = false
             local targetPart = nil
             
@@ -930,28 +1056,23 @@ rs.RenderStepped:Connect(function()
             end
             
             if targetStillValid and targetPart then
-                -- Continua mirando no mesmo alvo (QUALQUER DISTÂNCIA)
                 local cameraPos = cam.CFrame.Position
                 local targetPos = targetPart.Position
                 local direction = (targetPos - cameraPos).Unit
                 cam.CFrame = CFrame.new(cameraPos, cameraPos + direction)
             else
-                -- Perdeu o alvo (morreu ou saiu da tela)
                 currentTarget = nil
             end
         end
         
-        -- Se não tem alvo ou lock está desligado, pega o melhor alvo
         if not currentTarget and #targets>0 then
             currentTarget = targets[1].pl
         end
         
-        -- Se tem alvo mas lock está desligado, pode trocar
         if not a.lockMode and #targets>0 then
             currentTarget = targets[1].pl
         end
         
-        -- Mira no alvo atual se ele existir (QUALQUER DISTÂNCIA)
         if currentTarget and currentTarget.Character then
             local parte = currentTarget.Character:FindFirstChild(a.aimPart) or currentTarget.Character:FindFirstChild("HumanoidRootPart") or currentTarget.Character:FindFirstChild("Torso")
             if parte then
@@ -1000,7 +1121,7 @@ rs.RenderStepped:Connect(function()
         end
     end
     
-    -- ESP
+    -- ESP DE JOGADORES
     if a.esp then
         local espPlayers=getESPPlayers()
         local espCount=0
@@ -1040,18 +1161,52 @@ rs.RenderStepped:Connect(function()
         end
         
         playersLabel.Text="👥 JOGADORES: "..#p:GetPlayers()
-        espCountLabel.Text="📡 ESP ATIVO: "..#espPlayers
-        renderLabel.Text="🎮 RENDERIZANDO: "..espCount
+        espCountLabel.Text="📡 ESP JOG: "..#espPlayers
     else
         for _,esp in pairs(espTags) do
             esp.bill.Enabled=false
         end
     end
+    
+    -- ESP DE FRUTAS
+    if a.espFrutas then
+        local frutasProximas=getFrutasProximas()
+        local frutaCount=0
+        
+        for _,data in ipairs(frutasProximas) do
+            local screenPos, onScreen=cam:WorldToViewportPoint(data.obj.Position)
+            
+            if onScreen then
+                data.bill.Adornee=data.obj
+                data.bill.Enabled=true
+                frutaCount=frutaCount+1
+                
+                local frame = data.bill:FindFirstChildWhichIsA("Frame")
+                if frame then
+                    local distLabel = frame:FindFirstChildWhichIsA("TextLabel")
+                    if distLabel then
+                        distLabel.Text=math.floor(data.dist).."m"
+                    end
+                end
+            else
+                data.bill.Enabled=false
+            end
+        end
+        
+        frutaCountLabel.Text="🍎 ESP FRUTAS: "..#frutasProximas
+        renderLabel.Text="🎮 RENDERIZANDO: "..(#frutasProximas + (#espTags or 0))
+    else
+        for _,bill in pairs(frutaTags) do
+            bill.Enabled=false
+        end
+        frutaCountLabel.Text="🍎 ESP FRUTAS: 0"
+    end
 end)
 
 -- Inicialização
 updateStatus()
-print("✅ ZEKYO HUB V5 - AIMBOT FUNCIONA EM TODAS DISTÂNCIAS!")
-print("🎯 PERTO • MÉDIO • LONGE - TUDO FUNCIONA!")
+print("✅ ZEKYO HUB V5 - ESP DE FRUTAS CARREGADO!")
+print("🎯 AIMBOT: DIST "..a.dist.." | FOV "..a.fov)
+print("👤 ESP JOG: DIST "..a.espDist)
+print("🍎 ESP FRUTAS: DIST "..a.frutaDist)
 print("🔒 LOCK-ON: "..(a.lockMode and "ATIVADO" or "DESATIVADO"))
-print("📏 DISTÂNCIA CONFIGURADA PARA 999 (INFINITA)")
