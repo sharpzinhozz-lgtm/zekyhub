@@ -1,8 +1,8 @@
--- ZEKYO HUB V5 - ESP DE FRUTAS + DISTÂNCIA CONFIGURÁVEL
+-- ZEKYO HUB V5 - DESIGN TRANSPARENTE COM MENU LATERAL
 local p=game:GetService("Players");local rs=game:GetService("RunService");local lp=p.LocalPlayer;local cam=workspace.CurrentCamera;local ui=game:GetService("UserInputService");local mouse=lp:GetMouse()
 local a={aim=false,silent=false,esp=false,espFrutas=false,dist=80,sens=1.0,fov=150,espDist=150,frutaDist=150,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE",lockMode=true}
-local currentTab="AIMBOT"
 local currentTarget = nil
+local menuOpen = true
 
 -- FUNÇÃO PARA CRIAR GUI
 local function createGui()
@@ -33,631 +33,652 @@ g.Parent=guiParent
 g.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
 g.DisplayOrder=999
 
+-- FUNDO PRINCIPAL TRANSPARENTE
 local main=Instance.new("Frame")
-main.Size=UDim2.new(0,350,0,780)
-main.Position=UDim2.new(0.5,-175,0.5,-390)
-main.BackgroundColor3=Color3.fromRGB(8,8,18)
+main.Size=UDim2.new(0,600,0,450)
+main.Position=UDim2.new(0.5,-300,0.5,-225)
+main.BackgroundColor3=Color3.fromRGB(0,0,0)
+main.BackgroundTransparency=0.85
 main.BorderSizePixel=0
 main.Active=true
 main.Draggable=true
 main.Parent=g
-Instance.new("UICorner",main).CornerRadius=UDim.new(0,20)
+Instance.new("UICorner",main).CornerRadius=UDim.new(0,25)
 
--- TOPO
-local top=Instance.new("Frame",main)
-top.Size=UDim2.new(1,0,0,70)
-top.BackgroundColor3=Color3.fromRGB(0,0,0)
-top.BorderSizePixel=0
-Instance.new("UICorner",top).CornerRadius=UDim.new(0,20)
+-- BORDA GLOW
+local border=Instance.new("UIStroke",main)
+border.Color=Color3.fromRGB(0,255,200)
+border.Thickness=2
+border.Transparency=0.3
 
-local gradient=Instance.new("UIGradient",top)
-gradient.Color=ColorSequence.new{
-    ColorSequenceKeypoint.new(0,Color3.fromRGB(255,215,0)),
-    ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,100,0)),
-    ColorSequenceKeypoint.new(1,Color3.fromRGB(255,215,0))
-}
+-- EFEITO GLASS (BLUR)
+local blurEffect=Instance.new("Frame",main)
+blurEffect.Size=UDim2.new(1,0,1,0)
+blurEffect.BackgroundColor3=Color3.fromRGB(255,255,255)
+blurEffect.BackgroundTransparency=0.95
+blurEffect.BorderSizePixel=0
+Instance.new("UICorner",blurEffect).CornerRadius=UDim.new(0,25)
 
-local title=Instance.new("TextLabel",top)
-title.Size=UDim2.new(1,0,0.6,0)
-title.Position=UDim2.new(0,0,0,10)
-title.BackgroundTransparency=1
-title.Text="ZEKYO HUB V5"
-title.TextColor3=Color3.fromRGB(255,255,255)
-title.TextSize=26
-title.Font=Enum.Font.GothamBold
+-- ========== MENU LATERAL ESQUERDO ==========
+local menuLateral=Instance.new("Frame",main)
+menuLateral.Size=UDim2.new(0,120,1,0)
+menuLateral.BackgroundColor3=Color3.fromRGB(20,20,40)
+menuLateral.BackgroundTransparency=0.3
+menuLateral.BorderSizePixel=0
+Instance.new("UICorner",menuLateral).CornerRadius=UDim.new(0,20)
 
-local subtitle=Instance.new("TextLabel",top)
-subtitle.Size=UDim2.new(1,0,0.3,0)
-subtitle.Position=UDim2.new(0,0,0.6,0)
-subtitle.BackgroundTransparency=1
-subtitle.Text="⚡ ESP DE FRUTAS ⚡"
-subtitle.TextColor3=Color3.fromRGB(255,255,200)
-subtitle.TextSize=12
-subtitle.Font=Enum.Font.Gotham
+-- TÍTULO DO MENU
+local menuTitle=Instance.new("TextLabel",menuLateral)
+menuTitle.Size=UDim2.new(1,0,0,50)
+menuTitle.Position=UDim2.new(0,0,0,10)
+menuTitle.BackgroundTransparency=1
+menuTitle.Text="ZEKYO"
+menuTitle.TextColor3=Color3.fromRGB(0,255,200)
+menuTitle.TextSize=18
+menuTitle.Font=Enum.Font.GothamBold
 
--- ABAS
-local tabFrame=Instance.new("Frame",main)
-tabFrame.Size=UDim2.new(1,-20,0,40)
-tabFrame.Position=UDim2.new(0,10,0,80)
-tabFrame.BackgroundTransparency=1
-
-local aimTab=Instance.new("TextButton",tabFrame)
-aimTab.Size=UDim2.new(0.3,0,1,0)
-aimTab.Position=UDim2.new(0,0,0,0)
-aimTab.BackgroundColor3=Color3.fromRGB(0,150,200)
-aimTab.Text="AIMBOT"
-aimTab.TextColor3=Color3.fromRGB(255,255,255)
-aimTab.TextSize=14
-aimTab.Font=Enum.Font.GothamBold
-Instance.new("UICorner",aimTab).CornerRadius=UDim.new(0,10)
-
-local silentTab=Instance.new("TextButton",tabFrame)
-silentTab.Size=UDim2.new(0.3,0,1,0)
-silentTab.Position=UDim2.new(0.35,0,0,0)
-silentTab.BackgroundColor3=Color3.fromRGB(200,50,150)
-silentTab.Text="SILENT"
-silentTab.TextColor3=Color3.fromRGB(255,255,255)
-silentTab.TextSize=14
-silentTab.Font=Enum.Font.GothamBold
-Instance.new("UICorner",silentTab).CornerRadius=UDim.new(0,10)
-
-local mainTab=Instance.new("TextButton",tabFrame)
-mainTab.Size=UDim2.new(0.3,0,1,0)
-mainTab.Position=UDim2.new(0.7,0,0,0)
-mainTab.BackgroundColor3=Color3.fromRGB(100,200,50)
-mainTab.Text="MAIN"
-mainTab.TextColor3=Color3.fromRGB(255,255,255)
-mainTab.TextSize=14
-mainTab.Font=Enum.Font.GothamBold
-Instance.new("UICorner",mainTab).CornerRadius=UDim.new(0,10)
-
--- CONTAINER DAS ABAS
-local container=Instance.new("Frame",main)
-container.Size=UDim2.new(1,-20,0,590)
-container.Position=UDim2.new(0,10,0,130)
-container.BackgroundColor3=Color3.fromRGB(15,15,25)
-container.BorderSizePixel=0
-Instance.new("UICorner",container).CornerRadius=UDim.new(0,15)
-
--- ========== AIMBOT FRAME ==========
-local aimFrame=Instance.new("Frame",container)
-aimFrame.Size=UDim2.new(1,0,1,0)
-aimFrame.BackgroundTransparency=1
-aimFrame.Visible=true
-
--- Preview da Mira
-local miraPreview=Instance.new("Frame",aimFrame)
-miraPreview.Size=UDim2.new(0.8,0,0,70)
-miraPreview.Position=UDim2.new(0.1,0,0,10)
-miraPreview.BackgroundColor3=Color3.fromRGB(20,20,30)
-miraPreview.BorderSizePixel=0
-Instance.new("UICorner",miraPreview).CornerRadius=UDim.new(0,10)
-
-local previewTitle=Instance.new("TextLabel",miraPreview)
-previewTitle.Size=UDim2.new(1,0,0,25)
-previewTitle.BackgroundTransparency=1
-previewTitle.Text="🎯 MIRA"
-previewTitle.TextColor3=Color3.fromRGB(0,200,255)
-previewTitle.TextSize=14
-previewTitle.Font=Enum.Font.GothamBold
-
--- Desenho da mira
-local circlePreview=Instance.new("Frame",miraPreview)
-circlePreview.Size=UDim2.new(0,40,0,40)
-circlePreview.Position=UDim2.new(0.5,-20,0.5,-10)
-circlePreview.BackgroundColor3=Color3.fromRGB(0,200,255)
-circlePreview.BackgroundTransparency=0.7
-circlePreview.BorderSizePixel=0
-Instance.new("UICorner",circlePreview).CornerRadius=UDim.new(1,0)
-
-local dotPreview=Instance.new("Frame",miraPreview)
-dotPreview.Size=UDim2.new(0,5,0,5)
-dotPreview.Position=UDim2.new(0.5,-2.5,0.5,-2.5)
-dotPreview.BackgroundColor3=Color3.fromRGB(255,255,255)
-dotPreview.BorderSizePixel=0
-Instance.new("UICorner",dotPreview).CornerRadius=UDim.new(1,0)
-
--- Botão Ativar Aimbot
-local aimToggle=Instance.new("TextButton",aimFrame)
-aimToggle.Size=UDim2.new(0.8,0,0,30)
-aimToggle.Position=UDim2.new(0.1,0,0,90)
-aimToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
-aimToggle.Text="⚪ ATIVAR AIMBOT"
-aimToggle.TextColor3=Color3.fromRGB(255,255,255)
-aimToggle.TextSize=12
-aimToggle.Font=Enum.Font.GothamBold
-Instance.new("UICorner",aimToggle).CornerRadius=UDim.new(0,8)
-
--- Configurações
-local configFrame=Instance.new("Frame",aimFrame)
-configFrame.Size=UDim2.new(0.9,0,0,60)
-configFrame.Position=UDim2.new(0.05,0,0,125)
-configFrame.BackgroundTransparency=1
-
-local function criarConfig(cfg,label,valor,x)
-    local bg=Instance.new("Frame",configFrame)
-    bg.Size=UDim2.new(0.3,-5,0,60)
-    bg.Position=UDim2.new(x,0,0,0)
-    bg.BackgroundColor3=Color3.fromRGB(20,20,30)
-    bg.BorderSizePixel=0
-    Instance.new("UICorner",bg).CornerRadius=UDim.new(0,8)
+-- BOTÕES DO MENU
+local function criarBotaoMenu(nome,icone,cor,y)
+    local btn=Instance.new("TextButton",menuLateral)
+    btn.Size=UDim2.new(0.9,0,0,45)
+    btn.Position=UDim2.new(0.05,0,0,y)
+    btn.BackgroundColor3=cor
+    btn.BackgroundTransparency=0.3
+    btn.Text=icone.." "..nome
+    btn.TextColor3=Color3.fromRGB(255,255,255)
+    btn.TextSize=12
+    btn.Font=Enum.Font.GothamBold
+    Instance.new("UICorner",btn).CornerRadius=UDim.new(0,12)
     
-    local lbl=Instance.new("TextLabel",bg)
-    lbl.Size=UDim2.new(1,0,0,20)
-    lbl.BackgroundTransparency=1
-    lbl.Text=label
-    lbl.TextColor3=Color3.fromRGB(200,200,200)
-    lbl.TextSize=10
-    lbl.Font=Enum.Font.Gotham
+    local stroke=Instance.new("UIStroke",btn)
+    stroke.Color=cor
+    stroke.Thickness=1
+    stroke.Transparency=0.5
+    
+    return btn
+end
+
+local mainBtn=criarBotaoMenu("MAIN","🏠",Color3.fromRGB(100,200,255),70)
+local aimBtn=criarBotaoMenu("AIMBOT","🎯",Color3.fromRGB(0,255,200),125)
+local espBtn=criarBotaoMenu("ESP","👁️",Color3.fromRGB(100,255,100),180)
+local configBtn=criarBotaoMenu("CONFIGS","⚙️",Color3.fromRGB(255,200,100),235)
+local silentBtn=criarBotaoMenu("SILENT","🤫",Color3.fromRGB(255,100,255),290)
+
+-- STATUS NO MENU
+local statusMenu=Instance.new("TextLabel",menuLateral)
+statusMenu.Size=UDim2.new(0.9,0,0,40)
+statusMenu.Position=UDim2.new(0.05,0,0,350)
+statusMenu.BackgroundColor3=Color3.fromRGB(0,0,0)
+statusMenu.BackgroundTransparency=0.5
+statusMenu.Text="🟢 ONLINE"
+statusMenu.TextColor3=Color3.fromRGB(0,255,0)
+statusMenu.TextSize=12
+statusMenu.Font=Enum.Font.GothamBold
+Instance.new("UICorner",statusMenu).CornerRadius=UDim.new(0,10)
+
+-- VERSÃO
+local version=Instance.new("TextLabel",menuLateral)
+version.Size=UDim2.new(0.9,0,0,20)
+version.Position=UDim2.new(0.05,0,0,400)
+version.BackgroundTransparency=1
+version.Text="v5.0 • F6"
+version.TextColor3=Color3.fromRGB(150,150,150)
+version.TextSize=10
+version.Font=Enum.Font.Gotham
+
+-- ========== CONTEÚDO PRINCIPAL ==========
+local content=Instance.new("Frame",main)
+content.Size=UDim2.new(1,-130,1,-20)
+content.Position=UDim2.new(0,125,0,10)
+content.BackgroundTransparency=1
+content.Parent=main
+
+-- ========== MAIN CONTENT ==========
+local mainContent=Instance.new("Frame",content)
+mainContent.Size=UDim2.new(1,0,1,0)
+mainContent.BackgroundTransparency=1
+mainContent.Visible=true
+
+-- CARD PRINCIPAL
+local mainCard=Instance.new("Frame",mainContent)
+mainCard.Size=UDim2.new(0.95,0,0.9,0)
+mainCard.Position=UDim2.new(0.025,0,0.05,0)
+mainCard.BackgroundColor3=Color3.fromRGB(30,30,50)
+mainCard.BackgroundTransparency=0.5
+mainCard.BorderSizePixel=0
+Instance.new("UICorner",mainCard).CornerRadius=UDim.new(0,20)
+
+local mainTitle=Instance.new("TextLabel",mainCard)
+mainTitle.Size=UDim2.new(1,0,0,40)
+mainTitle.Position=UDim2.new(0,15,0,10)
+mainTitle.BackgroundTransparency=1
+mainTitle.Text="🏠 MAIN / INÍCIO"
+mainTitle.TextColor3=Color3.fromRGB(255,255,255)
+mainTitle.TextSize=20
+mainTitle.Font=Enum.Font.GothamBold
+mainTitle.TextXAlignment=Enum.TextXAlignment.Left
+
+-- INFO CARDS
+local function criarInfoCard(texto,valor,cor,x,y)
+    local card=Instance.new("Frame",mainCard)
+    card.Size=UDim2.new(0.25,-10,0,80)
+    card.Position=UDim2.new(x,0,0,y)
+    card.BackgroundColor3=cor
+    card.BackgroundTransparency=0.3
+    card.BorderSizePixel=0
+    Instance.new("UICorner",card).CornerRadius=UDim.new(0,15)
+    
+    local label=Instance.new("TextLabel",card)
+    label.Size=UDim2.new(1,0,0,30)
+    label.Position=UDim2.new(0,0,0,10)
+    label.BackgroundTransparency=1
+    label.Text=texto
+    label.TextColor3=Color3.fromRGB(255,255,255)
+    label.TextSize=12
+    label.Font=Enum.Font.Gotham
+    
+    local valorLabel=Instance.new("TextLabel",card)
+    valorLabel.Size=UDim2.new(1,0,0,30)
+    valorLabel.Position=UDim2.new(0,0,0,40)
+    valorLabel.BackgroundTransparency=1
+    valorLabel.Text=valor
+    valorLabel.TextColor3=Color3.fromRGB(255,255,255)
+    valorLabel.TextSize=18
+    valorLabel.Font=Enum.Font.GothamBold
+    
+    return card
+end
+
+local playerCount = #p:GetPlayers()
+criarInfoCard("JOGADORES",playerCount,Color3.fromRGB(0,150,200),0.05,60)
+criarInfoCard("PING",math.random(20,60).."ms",Color3.fromRGB(100,200,0),0.35,60)
+criarInfoCard("FPS",math.floor(1/rs.RenderStepped:Wait()),Color3.fromRGB(200,100,0),0.65,60)
+
+-- STATUS DOS MÓDULOS
+local moduleFrame=Instance.new("Frame",mainCard)
+moduleFrame.Size=UDim2.new(0.9,0,0,100)
+moduleFrame.Position=UDim2.new(0.05,0,0,160)
+moduleFrame.BackgroundColor3=Color3.fromRGB(20,20,40)
+moduleFrame.BackgroundTransparency=0.3
+moduleFrame.BorderSizePixel=0
+Instance.new("UICorner",moduleFrame).CornerRadius=UDim.new(0,15)
+
+local moduleTitle=Instance.new("TextLabel",moduleFrame)
+moduleTitle.Size=UDim2.new(1,0,0,25)
+moduleTitle.Position=UDim2.new(0,10,0,5)
+moduleTitle.BackgroundTransparency=1
+moduleTitle.Text="📊 STATUS DOS MÓDULOS"
+moduleTitle.TextColor3=Color3.fromRGB(200,200,200)
+moduleTitle.TextSize=12
+moduleTitle.Font=Enum.Font.GothamBold
+moduleTitle.TextXAlignment=Enum.TextXAlignment.Left
+
+local function criarStatusModulo(nome,icone,status,y)
+    local bg=Instance.new("Frame",moduleFrame)
+    bg.Size=UDim2.new(0.9,0,0,30)
+    bg.Position=UDim2.new(0.05,0,0,y)
+    bg.BackgroundTransparency=1
+    
+    local iconLabel=Instance.new("TextLabel",bg)
+    iconLabel.Size=UDim2.new(0,30,1,0)
+    iconLabel.BackgroundTransparency=1
+    iconLabel.Text=icone
+    iconLabel.TextColor3=Color3.fromRGB(255,255,255)
+    iconLabel.TextSize=16
+    
+    local nameLabel=Instance.new("TextLabel",bg)
+    nameLabel.Size=UDim2.new(0.4,0,1,0)
+    nameLabel.Position=UDim2.new(0,35,0,0)
+    nameLabel.BackgroundTransparency=1
+    nameLabel.Text=nome
+    nameLabel.TextColor3=Color3.fromRGB(200,200,200)
+    nameLabel.TextSize=12
+    nameLabel.TextXAlignment=Enum.TextXAlignment.Left
+    
+    local statusLabel=Instance.new("TextLabel",bg)
+    statusLabel.Size=UDim2.new(0.3,0,1,0)
+    statusLabel.Position=UDim2.new(0.7,0,0,0)
+    statusLabel.BackgroundTransparency=1
+    statusLabel.Text=status
+    statusLabel.TextColor3=status=="ON" and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,100,100)
+    statusLabel.TextSize=12
+    statusLabel.Font=Enum.Font.GothamBold
+end
+
+-- ========== AIMBOT CONTENT ==========
+local aimContent=Instance.new("Frame",content)
+aimContent.Size=UDim2.new(1,0,1,0)
+aimContent.BackgroundTransparency=1
+aimContent.Visible=false
+
+local aimCard=Instance.new("Frame",aimContent)
+aimCard.Size=UDim2.new(0.95,0,0.9,0)
+aimCard.Position=UDim2.new(0.025,0,0.05,0)
+aimCard.BackgroundColor3=Color3.fromRGB(30,30,50)
+aimCard.BackgroundTransparency=0.5
+aimCard.BorderSizePixel=0
+Instance.new("UICorner",aimCard).CornerRadius=UDim.new(0,20)
+
+local aimTitle=Instance.new("TextLabel",aimCard)
+aimTitle.Size=UDim2.new(1,0,0,40)
+aimTitle.Position=UDim2.new(0,15,0,10)
+aimTitle.BackgroundTransparency=1
+aimTitle.Text="🎯 AIMBOT / MIRA"
+aimTitle.TextColor3=Color3.fromRGB(0,255,200)
+aimTitle.TextSize=20
+aimTitle.Font=Enum.Font.GothamBold
+aimTitle.TextXAlignment=Enum.TextXAlignment.Left
+
+-- PREVIEW DA MIRA
+local aimPreview=Instance.new("Frame",aimCard)
+aimPreview.Size=UDim2.new(0.3,0,0,100)
+aimPreview.Position=UDim2.new(0.65,0,0,20)
+aimPreview.BackgroundColor3=Color3.fromRGB(20,20,40)
+aimPreview.BackgroundTransparency=0.3
+aimPreview.BorderSizePixel=0
+Instance.new("UICorner",aimPreview).CornerRadius=UDim.new(1,0)
+
+local previewCircle=Instance.new("Frame",aimPreview)
+previewCircle.Size=UDim2.new(0,50,0,50)
+previewCircle.Position=UDim2.new(0.5,-25,0.5,-25)
+previewCircle.BackgroundColor3=Color3.fromRGB(0,255,200)
+previewCircle.BackgroundTransparency=0.7
+previewCircle.BorderSizePixel=0
+Instance.new("UICorner",previewCircle).CornerRadius=UDim.new(1,0)
+
+local previewDot=Instance.new("Frame",aimPreview)
+previewDot.Size=UDim2.new(0,6,0,6)
+previewDot.Position=UDim2.new(0.5,-3,0.5,-3)
+previewDot.BackgroundColor3=Color3.fromRGB(255,255,255)
+previewDot.BorderSizePixel=0
+Instance.new("UICorner",previewDot).CornerRadius=UDim.new(1,0)
+
+-- CONTROLES AIMBOT
+local aimControls=Instance.new("Frame",aimCard)
+aimControls.Size=UDim2.new(0.6,0,0.7,0)
+aimControls.Position=UDim2.new(0.05,0,0.15,0)
+aimControls.BackgroundTransparency=1
+
+local function criarSliderAIM(nome,valor,min,max,y)
+    local bg=Instance.new("Frame",aimControls)
+    bg.Size=UDim2.new(0.9,0,0,50)
+    bg.Position=UDim2.new(0,0,0,y)
+    bg.BackgroundTransparency=1
+    
+    local label=Instance.new("TextLabel",bg)
+    label.Size=UDim2.new(0.3,0,0,20)
+    label.BackgroundTransparency=1
+    label.Text=nome
+    label.TextColor3=Color3.fromRGB(200,200,200)
+    label.TextSize=12
+    label.TextXAlignment=Enum.TextXAlignment.Left
     
     local box=Instance.new("TextBox",bg)
-    box.Size=UDim2.new(0.8,0,0,25)
-    box.Position=UDim2.new(0.1,0,0,25)
-    box.BackgroundColor3=Color3.fromRGB(30,30,40)
+    box.Size=UDim2.new(0.2,0,0,30)
+    box.Position=UDim2.new(0.3,0,0,0)
+    box.BackgroundColor3=Color3.fromRGB(30,30,50)
+    box.BackgroundTransparency=0.3
     box.Text=tostring(valor)
-    box.TextColor3=Color3.fromRGB(0,200,255)
-    box.TextSize=12
-    box.Font=Enum.Font.Gotham
-    Instance.new("UICorner",box).CornerRadius=UDim.new(0,6)
+    box.TextColor3=Color3.fromRGB(0,255,200)
+    box.TextSize=14
+    box.Font=Enum.Font.GothamBold
+    Instance.new("UICorner",box).CornerRadius=UDim.new(0,8)
     
     return box
 end
 
-local sensBox=criarConfig("SENS","SENS",a.sens,0)
-local distBox=criarConfig("DIST","DIST",a.dist,0.35)
-local fovBox=criarConfig("FOV","FOV",a.fov,0.7)
+local sensBox=criarSliderAIM("SENSIBILIDADE",a.sens,0.1,1,0)
+local distBox=criarSliderAIM("DISTÂNCIA",a.dist,10,999,60)
+local fovBox=criarSliderAIM("FOV",a.fov,30,500,120)
 
--- SELEÇÃO DE PARTE DO AIMBOT
-local aimPartFrame=Instance.new("Frame",aimFrame)
-aimPartFrame.Size=UDim2.new(0.8,0,0,50)
-aimPartFrame.Position=UDim2.new(0.1,0,0,190)
-aimPartFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
-aimPartFrame.BorderSizePixel=0
-Instance.new("UICorner",aimPartFrame).CornerRadius=UDim.new(0,8)
+-- TOGGLES
+local function criarToggle(texto,cor,estado,y)
+    local bg=Instance.new("Frame",aimControls)
+    bg.Size=UDim2.new(0.9,0,0,40)
+    bg.Position=UDim2.new(0,0,0,y)
+    bg.BackgroundTransparency=1
+    
+    local label=Instance.new("TextLabel",bg)
+    label.Size=UDim2.new(0.7,0,1,0)
+    label.BackgroundTransparency=1
+    label.Text=texto
+    label.TextColor3=Color3.fromRGB(255,255,255)
+    label.TextSize=12
+    label.TextXAlignment=Enum.TextXAlignment.Left
+    
+    local btn=Instance.new("TextButton",bg)
+    btn.Size=UDim2.new(0.2,0,0,30)
+    btn.Position=UDim2.new(0.7,0,0.5,-15)
+    btn.BackgroundColor3=estado and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
+    btn.Text=estado and "ON" or "OFF"
+    btn.TextColor3=Color3.fromRGB(255,255,255)
+    btn.TextSize=12
+    btn.Font=Enum.Font.GothamBold
+    Instance.new("UICorner",btn).CornerRadius=UDim.new(0,8)
+    
+    return btn
+end
 
-local aimPartLabel=Instance.new("TextLabel",aimPartFrame)
-aimPartLabel.Size=UDim2.new(0.3,0,1,0)
-aimPartLabel.BackgroundTransparency=1
-aimPartLabel.Text="🎯 MIRAR:"
-aimPartLabel.TextColor3=Color3.fromRGB(255,215,0)
-aimPartLabel.TextSize=11
-aimPartLabel.Font=Enum.Font.GothamBold
-aimPartLabel.TextXAlignment=Enum.TextXAlignment.Right
+local aimToggle=criarToggle("ATIVAR AIMBOT",Color3.fromRGB(0,255,200),a.aim,180)
+local lockToggle=criarToggle("LOCK-ON",Color3.fromRGB(255,200,0),a.lockMode,230)
+local fovToggle=criarToggle("FOV CIRCLE",Color3.fromRGB(0,200,255),a.fovCircle,280)
 
-local aimPartBtn=Instance.new("TextButton",aimPartFrame)
-aimPartBtn.Size=UDim2.new(0.4,0,0,30)
-aimPartBtn.Position=UDim2.new(0.35,0,0.5,-15)
-aimPartBtn.BackgroundColor3=Color3.fromRGB(100,50,150)
-aimPartBtn.Text="HEAD"
-aimPartBtn.TextColor3=Color3.fromRGB(255,255,255)
-aimPartBtn.TextSize=12
-aimPartBtn.Font=Enum.Font.GothamBold
-Instance.new("UICorner",aimPartBtn).CornerRadius=UDim.new(0,4)
+-- ========== ESP CONTENT ==========
+local espContent=Instance.new("Frame",content)
+espContent.Size=UDim2.new(1,0,1,0)
+espContent.BackgroundTransparency=1
+espContent.Visible=false
 
--- MODO DE LOCK
-local lockFrame=Instance.new("Frame",aimFrame)
-lockFrame.Size=UDim2.new(0.8,0,0,50)
-lockFrame.Position=UDim2.new(0.1,0,0,245)
-lockFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
-lockFrame.BorderSizePixel=0
-Instance.new("UICorner",lockFrame).CornerRadius=UDim.new(0,8)
+local espCard=Instance.new("Frame",espContent)
+espCard.Size=UDim2.new(0.95,0,0.9,0)
+espCard.Position=UDim2.new(0.025,0,0.05,0)
+espCard.BackgroundColor3=Color3.fromRGB(30,30,50)
+espCard.BackgroundTransparency=0.5
+espCard.BorderSizePixel=0
+Instance.new("UICorner",espCard).CornerRadius=UDim.new(0,20)
 
-local lockLabel=Instance.new("TextLabel",lockFrame)
-lockLabel.Size=UDim2.new(0.3,0,1,0)
-lockLabel.BackgroundTransparency=1
-lockLabel.Text="🔒 LOCK:"
-lockLabel.TextColor3=Color3.fromRGB(255,215,0)
-lockLabel.TextSize=11
-lockLabel.Font=Enum.Font.GothamBold
-lockLabel.TextXAlignment=Enum.TextXAlignment.Right
+local espTitle=Instance.new("TextLabel",espCard)
+espTitle.Size=UDim2.new(1,0,0,40)
+espTitle.Position=UDim2.new(0,15,0,10)
+espTitle.BackgroundTransparency=1
+espTitle.Text="👁️ ESP / VISÃO"
+espTitle.TextColor3=Color3.fromRGB(100,255,100)
+espTitle.TextSize=20
+espTitle.Font=Enum.Font.GothamBold
+espTitle.TextXAlignment=Enum.TextXAlignment.Left
 
-local lockBtn=Instance.new("TextButton",lockFrame)
-lockBtn.Size=UDim2.new(0.4,0,0,30)
-lockBtn.Position=UDim2.new(0.35,0,0.5,-15)
-lockBtn.BackgroundColor3=Color3.fromRGB(0,150,0)
-lockBtn.Text="ATIVADO"
-lockBtn.TextColor3=Color3.fromRGB(255,255,255)
-lockBtn.TextSize=12
-lockBtn.Font=Enum.Font.GothamBold
-Instance.new("UICorner",lockBtn).CornerRadius=UDim.new(0,4)
+-- CONTROLES ESP
+local espControls=Instance.new("Frame",espCard)
+espControls.Size=UDim2.new(0.9,0,0.8,0)
+espControls.Position=UDim2.new(0.05,0,0.15,0)
+espControls.BackgroundTransparency=1
 
--- FOV Circle toggle
-local fovToggle=Instance.new("TextButton",aimFrame)
-fovToggle.Size=UDim2.new(0.8,0,0,25)
-fovToggle.Position=UDim2.new(0.1,0,0,300)
-fovToggle.BackgroundColor3=Color3.fromRGB(0,150,0)
-fovToggle.Text="⭕ FOV CIRCLE: ATIVADO"
-fovToggle.TextColor3=Color3.fromRGB(255,255,255)
-fovToggle.TextSize=11
-fovToggle.Font=Enum.Font.Gotham
-Instance.new("UICorner",fovToggle).CornerRadius=UDim.new(0,6)
+local espToggleBtn=criarToggle("ATIVAR ESP JOGADORES",Color3.fromRGB(100,255,100),a.esp,0)
+local espDistBox=criarSliderAIM("DISTÂNCIA JOG",a.espDist,30,999,50)
+local frutaToggleBtn=criarToggle("ATIVAR ESP FRUTAS",Color3.fromRGB(255,150,100),a.espFrutas,110)
+local frutaDistBox=criarSliderAIM("DISTÂNCIA FRUTA",a.frutaDist,30,999,160)
 
--- KEYBIND SETTINGS
-local keybindFrame=Instance.new("Frame",aimFrame)
-keybindFrame.Size=UDim2.new(0.8,0,0,90)
-keybindFrame.Position=UDim2.new(0.1,0,0,330)
-keybindFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
-keybindFrame.BorderSizePixel=0
-Instance.new("UICorner",keybindFrame).CornerRadius=UDim.new(0,8)
-
-local keybindTitle=Instance.new("TextLabel",keybindFrame)
-keybindTitle.Size=UDim2.new(1,0,0,25)
-keybindTitle.BackgroundTransparency=1
-keybindTitle.Text="🔑 CONFIGURAÇÃO DA TECLA"
-keybindTitle.TextColor3=Color3.fromRGB(255,215,0)
-keybindTitle.TextSize=12
-keybindTitle.Font=Enum.Font.GothamBold
-
--- Linha da tecla
-local keyLine=Instance.new("Frame",keybindFrame)
-keyLine.Size=UDim2.new(0.9,0,0,30)
-keyLine.Position=UDim2.new(0.05,0,0,30)
-keyLine.BackgroundTransparency=1
-
-local keyLabel=Instance.new("TextLabel",keyLine)
-keyLabel.Size=UDim2.new(0.3,0,1,0)
-keyLabel.BackgroundTransparency=1
-keyLabel.Text="TECLA:"
-keyLabel.TextColor3=Color3.fromRGB(200,200,200)
-keyLabel.TextSize=11
-keyLabel.Font=Enum.Font.Gotham
-keyLabel.TextXAlignment=Enum.TextXAlignment.Right
-
-local keyBtn=Instance.new("TextButton",keyLine)
-keyBtn.Size=UDim2.new(0.4,0,0,25)
-keyBtn.Position=UDim2.new(0.35,0,0.5,-12.5)
-keyBtn.BackgroundColor3=Color3.fromRGB(30,30,40)
-keyBtn.Text="[ X ]"
-keyBtn.TextColor3=Color3.fromRGB(255,255,255)
-keyBtn.TextSize=11
-keyBtn.Font=Enum.Font.GothamBold
-Instance.new("UICorner",keyBtn).CornerRadius=UDim.new(0,4)
-
--- Modo da tecla (HOLD/TOGGLE)
-local modeLine=Instance.new("Frame",keybindFrame)
-modeLine.Size=UDim2.new(0.9,0,0,30)
-modeLine.Position=UDim2.new(0.05,0,0,65)
-modeLine.BackgroundTransparency=1
-
-local modeLabel=Instance.new("TextLabel",modeLine)
-modeLabel.Size=UDim2.new(0.3,0,1,0)
-modeLabel.BackgroundTransparency=1
-modeLabel.Text="MODO:"
-modeLabel.TextColor3=Color3.fromRGB(200,200,200)
-modeLabel.TextSize=11
-modeLabel.Font=Enum.Font.Gotham
-modeLabel.TextXAlignment=Enum.TextXAlignment.Right
-
-local modeBtn=Instance.new("TextButton",modeLine)
-modeBtn.Size=UDim2.new(0.4,0,0,25)
-modeBtn.Position=UDim2.new(0.35,0,0.5,-12.5)
-modeBtn.BackgroundColor3=Color3.fromRGB(100,50,150)
-modeBtn.Text="TOGGLE"
-modeBtn.TextColor3=Color3.fromRGB(255,255,255)
-modeBtn.TextSize=11
-modeBtn.Font=Enum.Font.GothamBold
-Instance.new("UICorner",modeBtn).CornerRadius=UDim.new(0,4)
-
--- ========== SILENT FRAME ==========
-local silentFrame=Instance.new("Frame",container)
-silentFrame.Size=UDim2.new(1,0,1,0)
-silentFrame.BackgroundTransparency=1
-silentFrame.Visible=false
-
-local silentToggle=Instance.new("TextButton",silentFrame)
-silentToggle.Size=UDim2.new(0.8,0,0,35)
-silentToggle.Position=UDim2.new(0.1,0,0,20)
-silentToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
-silentToggle.Text="⚪ ATIVAR SILENT AIM"
-silentToggle.TextColor3=Color3.fromRGB(255,255,255)
-silentToggle.TextSize=12
-silentToggle.Font=Enum.Font.GothamBold
-Instance.new("UICorner",silentToggle).CornerRadius=UDim.new(0,8)
-
-local sdistBox=Instance.new("TextBox",silentFrame)
-sdistBox.Size=UDim2.new(0.3,0,0,30)
-sdistBox.Position=UDim2.new(0.1,0,0,70)
-sdistBox.BackgroundColor3=Color3.fromRGB(20,20,30)
-sdistBox.Text=tostring(a.dist)
-sdistBox.TextColor3=Color3.fromRGB(255,100,100)
-sdistBox.TextSize=12
-Instance.new("UICorner",sdistBox).CornerRadius=UDim.new(0,6)
-
-local sdistLabel=Instance.new("TextLabel",silentFrame)
-sdistLabel.Size=UDim2.new(0.3,0,0,20)
-sdistLabel.Position=UDim2.new(0.1,0,0,100)
-sdistLabel.BackgroundTransparency=1
-sdistLabel.Text="DISTÂNCIA"
-sdistLabel.TextColor3=Color3.fromRGB(200,200,200)
-sdistLabel.TextSize=10
-sdistLabel.Font=Enum.Font.Gotham
-
-local parteBtn=Instance.new("TextButton",silentFrame)
-parteBtn.Size=UDim2.new(0.4,0,0,30)
-parteBtn.Position=UDim2.new(0.5,0,0,70)
-parteBtn.BackgroundColor3=Color3.fromRGB(100,50,150)
-parteBtn.Text="HEAD"
-parteBtn.TextColor3=Color3.fromRGB(255,255,255)
-parteBtn.TextSize=12
-parteBtn.Font=Enum.Font.GothamBold
-Instance.new("UICorner",parteBtn).CornerRadius=UDim.new(0,6)
-
-local parteLabel=Instance.new("TextLabel",silentFrame)
-parteLabel.Size=UDim2.new(0.4,0,0,20)
-parteLabel.Position=UDim2.new(0.5,0,0,100)
-parteLabel.BackgroundTransparency=1
-parteLabel.Text="PARTE DO CORPO"
-parteLabel.TextColor3=Color3.fromRGB(200,200,200)
-parteLabel.TextSize=10
-parteLabel.Font=Enum.Font.Gotham
-
--- ========== MAIN FRAME (ESP) ==========
-local mainFrame=Instance.new("Frame",container)
-mainFrame.Size=UDim2.new(1,0,1,0)
-mainFrame.BackgroundTransparency=1
-mainFrame.Visible=false
-
--- ESP de Jogadores
-local espToggle=Instance.new("TextButton",mainFrame)
-espToggle.Size=UDim2.new(0.8,0,0,30)
-espToggle.Position=UDim2.new(0.1,0,0,15)
-espToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
-espToggle.Text="⚪ ATIVAR ESP"
-espToggle.TextColor3=Color3.fromRGB(255,255,255)
-espToggle.TextSize=12
-espToggle.Font=Enum.Font.GothamBold
-Instance.new("UICorner",espToggle).CornerRadius=UDim.new(0,6)
-
--- Distância do ESP de Jogadores
-local espDistFrame=Instance.new("Frame",mainFrame)
-espDistFrame.Size=UDim2.new(0.8,0,0,50)
-espDistFrame.Position=UDim2.new(0.1,0,0,50)
-espDistFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
-espDistFrame.BorderSizePixel=0
-Instance.new("UICorner",espDistFrame).CornerRadius=UDim.new(0,8)
-
-local espDistLabel=Instance.new("TextLabel",espDistFrame)
-espDistLabel.Size=UDim2.new(0.4,0,1,0)
-espDistLabel.BackgroundTransparency=1
-espDistLabel.Text="👤 DIST JOG:"
-espDistLabel.TextColor3=Color3.fromRGB(255,215,0)
-espDistLabel.TextSize=11
-espDistLabel.Font=Enum.Font.GothamBold
-espDistLabel.TextXAlignment=Enum.TextXAlignment.Right
-
-local espDistBox=Instance.new("TextBox",espDistFrame)
-espDistBox.Size=UDim2.new(0.4,0,0,30)
-espDistBox.Position=UDim2.new(0.5,0,0.5,-15)
-espDistBox.BackgroundColor3=Color3.fromRGB(30,30,40)
-espDistBox.Text=tostring(a.espDist)
-espDistBox.TextColor3=Color3.fromRGB(100,255,100)
-espDistBox.TextSize=12
-espDistBox.Font=Enum.Font.Gotham
-Instance.new("UICorner",espDistBox).CornerRadius=UDim.new(0,6)
-
--- ESP de Frutas
-local frutaToggle=Instance.new("TextButton",mainFrame)
-frutaToggle.Size=UDim2.new(0.8,0,0,30)
-frutaToggle.Position=UDim2.new(0.1,0,0,105)
-frutaToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
-frutaToggle.Text="🍎 ATIVAR ESP FRUTAS"
-frutaToggle.TextColor3=Color3.fromRGB(255,255,255)
-frutaToggle.TextSize=12
-frutaToggle.Font=Enum.Font.GothamBold
-Instance.new("UICorner",frutaToggle).CornerRadius=UDim.new(0,6)
-
--- Distância do ESP de Frutas
-local frutaDistFrame=Instance.new("Frame",mainFrame)
-frutaDistFrame.Size=UDim2.new(0.8,0,0,50)
-frutaDistFrame.Position=UDim2.new(0.1,0,0,140)
-frutaDistFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
-frutaDistFrame.BorderSizePixel=0
-Instance.new("UICorner",frutaDistFrame).CornerRadius=UDim.new(0,8)
-
-local frutaDistLabel=Instance.new("TextLabel",frutaDistFrame)
-frutaDistLabel.Size=UDim2.new(0.4,0,1,0)
-frutaDistLabel.BackgroundTransparency=1
-frutaDistLabel.Text="🍎 DIST FRUTA:"
-frutaDistLabel.TextColor3=Color3.fromRGB(255,215,0)
-frutaDistLabel.TextSize=11
-frutaDistLabel.Font=Enum.Font.GothamBold
-frutaDistLabel.TextXAlignment=Enum.TextXAlignment.Right
-
-local frutaDistBox=Instance.new("TextBox",frutaDistFrame)
-frutaDistBox.Size=UDim2.new(0.4,0,0,30)
-frutaDistBox.Position=UDim2.new(0.5,0,0.5,-15)
-frutaDistBox.BackgroundColor3=Color3.fromRGB(30,30,40)
-frutaDistBox.Text=tostring(a.frutaDist)
-frutaDistBox.TextColor3=Color3.fromRGB(255,150,100)
-frutaDistBox.TextSize=12
-frutaDistBox.Font=Enum.Font.Gotham
-Instance.new("UICorner",frutaDistBox).CornerRadius=UDim.new(0,6)
-
--- Seleção de Time
-local timeFrame=Instance.new("Frame",mainFrame)
-timeFrame.Size=UDim2.new(0.8,0,0,100)
-timeFrame.Position=UDim2.new(0.1,0,0,200)
-timeFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
-timeFrame.BorderSizePixel=0
-Instance.new("UICorner",timeFrame).CornerRadius=UDim.new(0,8)
+-- TIME
+local timeFrame=Instance.new("Frame",espControls)
+timeFrame.Size=UDim2.new(0.9,0,0,80)
+timeFrame.Position=UDim2.new(0,0,0,220)
+timeFrame.BackgroundColor3=Color3.fromRGB(20,20,40)
+timeFrame.BackgroundTransparency=0.3
+Instance.new("UICorner",timeFrame).CornerRadius=UDim.new(0,12)
 
 local timeTitle=Instance.new("TextLabel",timeFrame)
 timeTitle.Size=UDim2.new(1,0,0,25)
 timeTitle.BackgroundTransparency=1
-timeTitle.Text="🎭 SELEÇÃO DE TIME"
+timeTitle.Text="🎭 TIME"
 timeTitle.TextColor3=Color3.fromRGB(255,215,0)
 timeTitle.TextSize=12
 timeTitle.Font=Enum.Font.GothamBold
 
 local mBtn=Instance.new("TextButton",timeFrame)
-mBtn.Size=UDim2.new(0.4,-5,0,25)
-mBtn.Position=UDim2.new(0.05,0,0,30)
+mBtn.Size=UDim2.new(0.3,-5,0,25)
+mBtn.Position=UDim2.new(0.02,0,0,30)
 mBtn.BackgroundColor3=Color3.fromRGB(0,100,200)
 mBtn.Text="MARINHA"
 mBtn.TextColor3=Color3.fromRGB(255,255,255)
 mBtn.TextSize=10
 mBtn.Font=Enum.Font.GothamBold
-Instance.new("UICorner",mBtn).CornerRadius=UDim.new(0,5)
+Instance.new("UICorner",mBtn).CornerRadius=UDim.new(0,6)
 
 local pBtn=Instance.new("TextButton",timeFrame)
-pBtn.Size=UDim2.new(0.4,-5,0,25)
-pBtn.Position=UDim2.new(0.55,0,0,30)
+pBtn.Size=UDim2.new(0.3,-5,0,25)
+pBtn.Position=UDim2.new(0.35,0,0,30)
 pBtn.BackgroundColor3=Color3.fromRGB(200,50,50)
 pBtn.Text="PIRATA"
 pBtn.TextColor3=Color3.fromRGB(255,255,255)
 pBtn.TextSize=10
 pBtn.Font=Enum.Font.GothamBold
-Instance.new("UICorner",pBtn).CornerRadius=UDim.new(0,5)
+Instance.new("UICorner",pBtn).CornerRadius=UDim.new(0,6)
 
 local nBtn=Instance.new("TextButton",timeFrame)
-nBtn.Size=UDim2.new(0.8,0,0,25)
-nBtn.Position=UDim2.new(0.1,0,0,65)
+nBtn.Size=UDim2.new(0.3,-5,0,25)
+nBtn.Position=UDim2.new(0.68,0,0,30)
 nBtn.BackgroundColor3=Color3.fromRGB(100,100,100)
 nBtn.Text="NEUTRO"
 nBtn.TextColor3=Color3.fromRGB(255,255,255)
 nBtn.TextSize=10
 nBtn.Font=Enum.Font.GothamBold
-Instance.new("UICorner",nBtn).CornerRadius=UDim.new(0,5)
+Instance.new("UICorner",nBtn).CornerRadius=UDim.new(0,6)
 
--- Info Players
-local infoFrame=Instance.new("Frame",mainFrame)
-infoFrame.Size=UDim2.new(0.8,0,0,90)
-infoFrame.Position=UDim2.new(0.1,0,0,310)
-infoFrame.BackgroundColor3=Color3.fromRGB(20,20,30)
-infoFrame.BorderSizePixel=0
-Instance.new("UICorner",infoFrame).CornerRadius=UDim.new(0,8)
+-- ========== CONFIGS CONTENT ==========
+local configContent=Instance.new("Frame",content)
+configContent.Size=UDim2.new(1,0,1,0)
+configContent.BackgroundTransparency=1
+configContent.Visible=false
 
-local playersLabel=Instance.new("TextLabel",infoFrame)
-playersLabel.Size=UDim2.new(1,0,0,25)
-playersLabel.BackgroundTransparency=1
-playersLabel.Text="👥 JOGADORES: 0"
-playersLabel.TextColor3=Color3.fromRGB(255,255,255)
-playersLabel.TextSize=12
-playersLabel.Font=Enum.Font.GothamBold
+local configCard=Instance.new("Frame",configContent)
+configCard.Size=UDim2.new(0.95,0,0.9,0)
+configCard.Position=UDim2.new(0.025,0,0.05,0)
+configCard.BackgroundColor3=Color3.fromRGB(30,30,50)
+configCard.BackgroundTransparency=0.5
+configCard.BorderSizePixel=0
+Instance.new("UICorner",configCard).CornerRadius=UDim.new(0,20)
 
-local espCountLabel=Instance.new("TextLabel",infoFrame)
-espCountLabel.Size=UDim2.new(1,0,0,20)
-espCountLabel.Position=UDim2.new(0,0,0,25)
-espCountLabel.BackgroundTransparency=1
-espCountLabel.Text="📡 ESP JOG: 0"
-espCountLabel.TextColor3=Color3.fromRGB(100,255,100)
-espCountLabel.TextSize=11
-espCountLabel.Font=Enum.Font.Gotham
+local configTitle=Instance.new("TextLabel",configCard)
+configTitle.Size=UDim2.new(1,0,0,40)
+configTitle.Position=UDim2.new(0,15,0,10)
+configTitle.BackgroundTransparency=1
+configTitle.Text="⚙️ CONFIGURAÇÕES"
+configTitle.TextColor3=Color3.fromRGB(255,200,100)
+configTitle.TextSize=20
+configTitle.Font=Enum.Font.GothamBold
+configTitle.TextXAlignment=Enum.TextXAlignment.Left
 
-local frutaCountLabel=Instance.new("TextLabel",infoFrame)
-frutaCountLabel.Size=UDim2.new(1,0,0,20)
-frutaCountLabel.Position=UDim2.new(0,0,0,45)
-frutaCountLabel.BackgroundTransparency=1
-frutaCountLabel.Text="🍎 ESP FRUTAS: 0"
-frutaCountLabel.TextColor3=Color3.fromRGB(255,150,100)
-frutaCountLabel.TextSize=11
-frutaCountLabel.Font=Enum.Font.Gotham
+-- KEYBIND
+local keyFrame=Instance.new("Frame",configCard)
+keyFrame.Size=UDim2.new(0.9,0,0,80)
+keyFrame.Position=UDim2.new(0.05,0,0.15,0)
+keyFrame.BackgroundColor3=Color3.fromRGB(20,20,40)
+keyFrame.BackgroundTransparency=0.3
+Instance.new("UICorner",keyFrame).CornerRadius=UDim.new(0,12)
 
-local renderLabel=Instance.new("TextLabel",infoFrame)
-renderLabel.Size=UDim2.new(1,0,0,20)
-renderLabel.Position=UDim2.new(0,0,0,65)
-renderLabel.BackgroundTransparency=1
-renderLabel.Text="🎮 RENDERIZANDO: 0"
-renderLabel.TextColor3=Color3.fromRGB(255,255,100)
-renderLabel.TextSize=11
-renderLabel.Font=Enum.Font.Gotham
+local keyTitle=Instance.new("TextLabel",keyFrame)
+keyTitle.Size=UDim2.new(1,0,0,25)
+keyTitle.BackgroundTransparency=1
+keyTitle.Text="🔑 TECLA DE ATALHO"
+keyTitle.TextColor3=Color3.fromRGB(255,215,0)
+keyTitle.TextSize=12
+keyTitle.Font=Enum.Font.GothamBold
 
--- STATUS
-local status=Instance.new("TextLabel",main)
-status.Size=UDim2.new(1,-20,0,25)
-status.Position=UDim2.new(0,10,1,-30)
-status.BackgroundColor3=Color3.fromRGB(0,0,0)
-status.BackgroundTransparency=0.3
-status.Text="STATUS: PRONTO • F6"
-status.TextColor3=Color3.fromRGB(0,255,0)
-status.TextSize=10
-status.Font=Enum.Font.Gotham
-Instance.new("UICorner",status).CornerRadius=UDim.new(0,6)
+local keyBtn=Instance.new("TextButton",keyFrame)
+keyBtn.Size=UDim2.new(0.3,0,0,35)
+keyBtn.Position=UDim2.new(0.35,0,0,35)
+keyBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+keyBtn.Text="[ X ]"
+keyBtn.TextColor3=Color3.fromRGB(255,255,255)
+keyBtn.TextSize=14
+keyBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",keyBtn).CornerRadius=UDim.new(0,8)
 
--- ========== FUNÇÕES DE MUDANÇA DE ABA ==========
-aimTab.MouseButton1Click:Connect(function()
-    aimTab.BackgroundColor3=Color3.fromRGB(0,150,200)
-    silentTab.BackgroundColor3=Color3.fromRGB(200,50,150)
-    mainTab.BackgroundColor3=Color3.fromRGB(100,200,50)
-    aimFrame.Visible=true
-    silentFrame.Visible=false
-    mainFrame.Visible=false
-    currentTab="AIMBOT"
+-- MODO DA TECLA
+local modeBtn=Instance.new("TextButton",configCard)
+modeBtn.Size=UDim2.new(0.4,0,0,40)
+modeBtn.Position=UDim2.new(0.05,0,0.35,0)
+modeBtn.BackgroundColor3=Color3.fromRGB(100,50,150)
+modeBtn.Text="MODO: TOGGLE"
+modeBtn.TextColor3=Color3.fromRGB(255,255,255)
+modeBtn.TextSize=12
+modeBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",modeBtn).CornerRadius=UDim.new(0,10)
+
+-- PARTE DO CORPO
+local partBtn=Instance.new("TextButton",configCard)
+partBtn.Size=UDim2.new(0.4,0,0,40)
+partBtn.Position=UDim2.new(0.55,0,0.35,0)
+partBtn.BackgroundColor3=Color3.fromRGB(150,50,100)
+partBtn.Text="PARTE: HEAD"
+partBtn.TextColor3=Color3.fromRGB(255,255,255)
+partBtn.TextSize=12
+partBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",partBtn).CornerRadius=UDim.new(0,10)
+
+-- ========== SILENT CONTENT ==========
+local silentContent=Instance.new("Frame",content)
+silentContent.Size=UDim2.new(1,0,1,0)
+silentContent.BackgroundTransparency=1
+silentContent.Visible=false
+
+local silentCard=Instance.new("Frame",silentContent)
+silentCard.Size=UDim2.new(0.95,0,0.9,0)
+silentCard.Position=UDim2.new(0.025,0,0.05,0)
+silentCard.BackgroundColor3=Color3.fromRGB(30,30,50)
+silentCard.BackgroundTransparency=0.5
+silentCard.BorderSizePixel=0
+Instance.new("UICorner",silentCard).CornerRadius=UDim.new(0,20)
+
+local silentTitle=Instance.new("TextLabel",silentCard)
+silentTitle.Size=UDim2.new(1,0,0,40)
+silentTitle.Position=UDim2.new(0,15,0,10)
+silentTitle.BackgroundTransparency=1
+silentTitle.Text="🤫 SILENT AIM"
+silentTitle.TextColor3=Color3.fromRGB(255,100,255)
+silentTitle.TextSize=20
+silentTitle.Font=Enum.Font.GothamBold
+silentTitle.TextXAlignment=Enum.TextXAlignment.Left
+
+-- CONTROLES SILENT
+local silentControls=Instance.new("Frame",silentCard)
+silentControls.Size=UDim2.new(0.9,0,0.6,0)
+silentControls.Position=UDim2.new(0.05,0,0.15,0)
+silentControls.BackgroundTransparency=1
+
+local silentToggleBtn=criarToggle("ATIVAR SILENT AIM",Color3.fromRGB(255,100,255),a.silent,0)
+local silentDistBox=criarSliderAIM("DISTÂNCIA",a.dist,10,999,50)
+local silentPartBtn=Instance.new("TextButton",silentControls)
+silentPartBtn.Size=UDim2.new(0.5,0,0,40)
+silentPartBtn.Position=UDim2.new(0.25,0,0,110)
+silentPartBtn.BackgroundColor3=Color3.fromRGB(100,50,150)
+silentPartBtn.Text="HEAD"
+silentPartBtn.TextColor3=Color3.fromRGB(255,255,255)
+silentPartBtn.TextSize=12
+silentPartBtn.Font=Enum.Font.GothamBold
+Instance.new("UICorner",silentPartBtn).CornerRadius=UDim.new(0,10)
+
+-- ========== FUNÇÕES DE NAVEGAÇÃO ==========
+mainBtn.MouseButton1Click:Connect(function()
+    mainContent.Visible=true
+    aimContent.Visible=false
+    espContent.Visible=false
+    configContent.Visible=false
+    silentContent.Visible=false
+    
+    -- Atualiza botões do menu
+    mainBtn.BackgroundColor3=Color3.fromRGB(100,200,255)
+    aimBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    espBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    configBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    silentBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
 end)
 
-silentTab.MouseButton1Click:Connect(function()
-    aimTab.BackgroundColor3=Color3.fromRGB(100,100,100)
-    silentTab.BackgroundColor3=Color3.fromRGB(200,50,150)
-    mainTab.BackgroundColor3=Color3.fromRGB(100,100,100)
-    aimFrame.Visible=false
-    silentFrame.Visible=true
-    mainFrame.Visible=false
-    currentTab="SILENT"
+aimBtn.MouseButton1Click:Connect(function()
+    mainContent.Visible=false
+    aimContent.Visible=true
+    espContent.Visible=false
+    configContent.Visible=false
+    silentContent.Visible=false
+    
+    mainBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    aimBtn.BackgroundColor3=Color3.fromRGB(0,150,200)
+    espBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    configBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    silentBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
 end)
 
-mainTab.MouseButton1Click:Connect(function()
-    aimTab.BackgroundColor3=Color3.fromRGB(100,100,100)
-    silentTab.BackgroundColor3=Color3.fromRGB(100,100,100)
-    mainTab.BackgroundColor3=Color3.fromRGB(100,200,50)
-    aimFrame.Visible=false
-    silentFrame.Visible=false
-    mainFrame.Visible=true
-    currentTab="MAIN"
+espBtn.MouseButton1Click:Connect(function()
+    mainContent.Visible=false
+    aimContent.Visible=false
+    espContent.Visible=true
+    configContent.Visible=false
+    silentContent.Visible=false
+    
+    mainBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    aimBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    espBtn.BackgroundColor3=Color3.fromRGB(100,200,50)
+    configBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    silentBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
 end)
 
--- ========== FUNÇÕES DOS BOTÕES ==========
+configBtn.MouseButton1Click:Connect(function()
+    mainContent.Visible=false
+    aimContent.Visible=false
+    espContent.Visible=false
+    configContent.Visible=true
+    silentContent.Visible=false
+    
+    mainBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    aimBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    espBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    configBtn.BackgroundColor3=Color3.fromRGB(200,150,50)
+    silentBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+end)
+
+silentBtn.MouseButton1Click:Connect(function()
+    mainContent.Visible=false
+    aimContent.Visible=false
+    espContent.Visible=false
+    configContent.Visible=false
+    silentContent.Visible=true
+    
+    mainBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    aimBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    espBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    configBtn.BackgroundColor3=Color3.fromRGB(30,30,50)
+    silentBtn.BackgroundColor3=Color3.fromRGB(200,50,200)
+end)
+
+-- ========== FUNÇÕES DOS CONTROLES ==========
 aimToggle.MouseButton1Click:Connect(function()
     a.aim=not a.aim
-    aimToggle.Text=a.aim and "🔵 AIMBOT ATIVADO" or "⚪ ATIVAR AIMBOT"
-    aimToggle.BackgroundColor3=a.aim and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
-    if not a.aim then currentTarget = nil end
-    updateStatus()
+    aimToggle.Text=a.aim and "ON" or "OFF"
+    aimToggle.BackgroundColor3=a.aim and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
 end)
 
-silentToggle.MouseButton1Click:Connect(function()
-    a.silent=not a.silent
-    silentToggle.Text=a.silent and "🔵 SILENT ATIVADO" or "⚪ ATIVAR SILENT AIM"
-    silentToggle.BackgroundColor3=a.silent and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
-end)
-
-espToggle.MouseButton1Click:Connect(function()
-    a.esp=not a.esp
-    espToggle.Text=a.esp and "🔵 ESP ATIVADO" or "⚪ ATIVAR ESP"
-    espToggle.BackgroundColor3=a.esp and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
-    updateStatus()
-end)
-
-frutaToggle.MouseButton1Click:Connect(function()
-    a.espFrutas=not a.espFrutas
-    frutaToggle.Text=a.espFrutas and "🍎 ESP FRUTAS ATIVADO" or "🍎 ATIVAR ESP FRUTAS"
-    frutaToggle.BackgroundColor3=a.espFrutas and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
-    updateStatus()
+lockToggle.MouseButton1Click:Connect(function()
+    a.lockMode=not a.lockMode
+    lockToggle.Text=a.lockMode and "ON" or "OFF"
+    lockToggle.BackgroundColor3=a.lockMode and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
 end)
 
 fovToggle.MouseButton1Click:Connect(function()
     a.fovCircle=not a.fovCircle
-    fovToggle.Text=a.fovCircle and "⭕ FOV CIRCLE: ATIVADO" or "⭕ FOV CIRCLE: DESATIVADO"
-    fovToggle.BackgroundColor3=a.fovCircle and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,150,150)
+    fovToggle.Text=a.fovCircle and "ON" or "OFF"
+    fovToggle.BackgroundColor3=a.fovCircle and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
 end)
 
--- MODO LOCK
-lockBtn.MouseButton1Click:Connect(function()
-    a.lockMode = not a.lockMode
-    lockBtn.Text = a.lockMode and "ATIVADO" or "DESATIVADO"
-    lockBtn.BackgroundColor3 = a.lockMode and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
-    if not a.lockMode then currentTarget = nil end
-    updateStatus()
+espToggleBtn.MouseButton1Click:Connect(function()
+    a.esp=not a.esp
+    espToggleBtn.Text=a.esp and "ON" or "OFF"
+    espToggleBtn.BackgroundColor3=a.esp and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
 end)
 
--- SELEÇÃO DE PARTE DO AIMBOT
-local aimPartes={"Head","HumanoidRootPart","Torso"}
-local aimPartIdx=1
-aimPartBtn.MouseButton1Click:Connect(function()
-    aimPartIdx=aimPartIdx%#aimPartes+1
-    a.aimPart=aimPartes[aimPartIdx]
-    aimPartBtn.Text=a.aimPart:upper()
-    updateStatus()
+frutaToggleBtn.MouseButton1Click:Connect(function()
+    a.espFrutas=not a.espFrutas
+    frutaToggleBtn.Text=a.espFrutas and "ON" or "OFF"
+    frutaToggleBtn.BackgroundColor3=a.espFrutas and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
 end)
+
+silentToggleBtn.MouseButton1Click:Connect(function()
+    a.silent=not a.silent
+    silentToggleBtn.Text=a.silent and "ON" or "OFF"
+    silentToggleBtn.BackgroundColor3=a.silent and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,50,50)
+end)
+
+-- CONFIGURAÇÕES DOS SLIDERS
+sensBox.FocusLost:Connect(function() local n=tonumber(sensBox.Text); if n and n>=0.1 and n<=1 then a.sens=n else sensBox.Text=tostring(a.sens) end end)
+distBox.FocusLost:Connect(function() local n=tonumber(distBox.Text); if n and n>=10 and n<=999 then a.dist=n else distBox.Text=tostring(a.dist) end end)
+fovBox.FocusLost:Connect(function() local n=tonumber(fovBox.Text); if n and n>=30 and n<=500 then a.fov=n else fovBox.Text=tostring(a.fov) end end)
+espDistBox.FocusLost:Connect(function() local n=tonumber(espDistBox.Text); if n and n>=30 and n<=999 then a.espDist=n else espDistBox.Text=tostring(a.espDist) end end)
+frutaDistBox.FocusLost:Connect(function() local n=tonumber(frutaDistBox.Text); if n and n>=30 and n<=999 then a.frutaDist=n else frutaDistBox.Text=tostring(a.frutaDist) end end)
+silentDistBox.FocusLost:Connect(function() local n=tonumber(silentDistBox.Text); if n and n>=10 and n<=999 then a.dist=n else silentDistBox.Text=tostring(a.dist) end end)
+
+-- BOTÕES DE TIME
+mBtn.MouseButton1Click:Connect(function() a.team="MARINHA" end)
+pBtn.MouseButton1Click:Connect(function() a.team="PIRATA" end)
+nBtn.MouseButton1Click:Connect(function() a.team="" end)
 
 -- KEYBIND
 local listeningForKey=false
@@ -667,21 +688,28 @@ keyBtn.MouseButton1Click:Connect(function()
     keyBtn.BackgroundColor3=Color3.fromRGB(255,100,0)
 end)
 
--- MODO HOLD/TOGGLE
+-- MODO DA TECLA
 modeBtn.MouseButton1Click:Connect(function()
     a.keyMode = a.keyMode == "TOGGLE" and "HOLD" or "TOGGLE"
-    modeBtn.Text = a.keyMode
-    modeBtn.BackgroundColor3 = a.keyMode == "TOGGLE" and Color3.fromRGB(100,50,150) or Color3.fromRGB(150,50,100)
-    updateStatus()
+    modeBtn.Text = "MODO: "..a.keyMode
 end)
 
-local keyPressed = false
-local function updateStatus()
-    local modeText = a.keyMode
-    local keyText = tostring(a.keybind):gsub("Enum.KeyCode.","")
-    status.Text = "STATUS: AIM:"..(a.aim and "ON" or "OFF").." ESP:"..(a.esp and "ON" or "OFF").." FRUTA:"..(a.espFrutas and "ON" or "OFF").." • TECLA: "..keyText.." ["..modeText.."]"
-end
+-- PARTE DO CORPO
+local partes={"Head","HumanoidRootPart","Torso"}
+local pIdx=1
+partBtn.MouseButton1Click:Connect(function()
+    pIdx=pIdx%#partes+1
+    a.aimPart=partes[pIdx]
+    partBtn.Text="PARTE: "..a.aimPart:upper()
+end)
 
+silentPartBtn.MouseButton1Click:Connect(function()
+    pIdx=pIdx%#partes+1
+    a.hitpart=partes[pIdx]
+    silentPartBtn.Text=partes[pIdx]:upper()
+end)
+
+-- F6
 ui.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
@@ -690,523 +718,12 @@ ui.InputBegan:Connect(function(input, gameProcessed)
         keyBtn.Text="[ "..tostring(input.KeyCode):gsub("Enum.KeyCode.","").." ]"
         keyBtn.BackgroundColor3=Color3.fromRGB(30,30,40)
         listeningForKey=false
-        updateStatus()
-    end
-    
-    if input.KeyCode == a.keybind then
-        if a.keyMode == "TOGGLE" then
-            a.aim = not a.aim
-            aimToggle.Text=a.aim and "🔵 AIMBOT ATIVADO" or "⚪ ATIVAR AIMBOT"
-            aimToggle.BackgroundColor3=a.aim and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
-            if not a.aim then currentTarget = nil end
-        else
-            keyPressed = true
-            a.aim = true
-            aimToggle.Text="🔵 AIMBOT ATIVADO [HOLD]"
-            aimToggle.BackgroundColor3=Color3.fromRGB(0,150,0)
-        end
-        updateStatus()
     end
     
     if input.KeyCode==Enum.KeyCode.F6 then
-        main.Visible=not main.Visible
+        g.Enabled=not g.Enabled
     end
 end)
 
-ui.InputEnded:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if a.keyMode == "HOLD" and input.KeyCode == a.keybind then
-        keyPressed = false
-        a.aim = false
-        aimToggle.Text="⚪ ATIVAR AIMBOT"
-        aimToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
-        currentTarget = nil
-        updateStatus()
-    end
-end)
-
--- CONFIGURAÇÕES DE DISTÂNCIA
-sensBox.FocusLost:Connect(function() local n=tonumber(sensBox.Text); if n and n>=0.1 and n<=1 then a.sens=n else sensBox.Text=tostring(a.sens) end end)
-distBox.FocusLost:Connect(function() local n=tonumber(distBox.Text); if n and n>=10 and n<=999 then a.dist=n else distBox.Text=tostring(a.dist) end end)
-fovBox.FocusLost:Connect(function() local n=tonumber(fovBox.Text); if n and n>=30 and n<=500 then a.fov=n else fovBox.Text=tostring(a.fov) end end)
-sdistBox.FocusLost:Connect(function() local n=tonumber(sdistBox.Text); if n and n>=10 and n<=999 then a.dist=n else sdistBox.Text=tostring(a.dist) end end)
-espDistBox.FocusLost:Connect(function() local n=tonumber(espDistBox.Text); if n and n>=30 and n<=999 then a.espDist=n else espDistBox.Text=tostring(a.espDist) end end)
-frutaDistBox.FocusLost:Connect(function() local n=tonumber(frutaDistBox.Text); if n and n>=30 and n<=999 then a.frutaDist=n else frutaDistBox.Text=tostring(a.frutaDist) end end)
-
-parteBtn.MouseButton1Click:Connect(function()
-    local partes={"Head","HumanoidRootPart","Torso"}
-    a.hitpart=partes[(table.find(partes,a.hitpart) or 0)%#partes+1]
-    parteBtn.Text=a.hitpart:upper()
-end)
-
-mBtn.MouseButton1Click:Connect(function() a.team="MARINHA"; updateStatus() end)
-pBtn.MouseButton1Click:Connect(function() a.team="PIRATA"; updateStatus() end)
-nBtn.MouseButton1Click:Connect(function() a.team=""; updateStatus() end)
-
--- ========== CÍCULO VISÍVEL ==========
-local circleGui=Instance.new("ScreenGui")
-circleGui.Name="CircleCursor"
-circleGui.ResetOnSpawn=false
-circleGui.Parent=guiParent
-circleGui.Enabled=false
-circleGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
-circleGui.DisplayOrder=999
-
-local circleContainer=Instance.new("Frame")
-circleContainer.Size=UDim2.new(0,a.fov*2,0,a.fov*2)
-circleContainer.BackgroundTransparency=1
-circleContainer.BorderSizePixel=0
-circleContainer.Parent=circleGui
-
--- Círculo externo
-local outerCircle=Instance.new("Frame")
-outerCircle.Size=UDim2.new(1,0,1,0)
-outerCircle.BackgroundTransparency=1
-outerCircle.BorderSizePixel=3
-outerCircle.BorderColor3=Color3.fromRGB(0,200,255)
-outerCircle.Parent=circleContainer
-Instance.new("UICorner",outerCircle).CornerRadius=UDim.new(1,0)
-
--- Círculo interno
-local innerCircle=Instance.new("Frame")
-innerCircle.Size=UDim2.new(0.94,0,0.94,0)
-innerCircle.Position=UDim2.new(0.03,0,0.03,0)
-innerCircle.BackgroundTransparency=1
-innerCircle.BorderSizePixel=2
-innerCircle.BorderColor3=Color3.fromRGB(255,255,255)
-innerCircle.Parent=circleContainer
-Instance.new("UICorner",innerCircle).CornerRadius=UDim.new(1,0)
-
--- Ponto central
-local centerDot=Instance.new("Frame")
-centerDot.Size=UDim2.new(0,6,0,6)
-centerDot.Position=UDim2.new(0.5,-3,0.5,-3)
-centerDot.BackgroundColor3=Color3.fromRGB(255,255,255)
-centerDot.BorderSizePixel=0
-centerDot.Parent=circleContainer
-Instance.new("UICorner",centerDot).CornerRadius=UDim.new(1,0)
-
--- Linhas de mira
-local hLine=Instance.new("Frame")
-hLine.Size=UDim2.new(1.2,0,0,2)
-hLine.Position=UDim2.new(-0.1,0,0.5,-1)
-hLine.BackgroundColor3=Color3.fromRGB(0,200,255)
-hLine.BackgroundTransparency=0.5
-hLine.BorderSizePixel=0
-hLine.Parent=circleContainer
-
-local vLine=Instance.new("Frame")
-vLine.Size=UDim2.new(0,2,1.2,0)
-vLine.Position=UDim2.new(0.5,-1,-0.1,0)
-vLine.BackgroundColor3=Color3.fromRGB(0,200,255)
-vLine.BackgroundTransparency=0.5
-vLine.BorderSizePixel=0
-vLine.Parent=circleContainer
-
--- ========== ESP DE JOGADORES ==========
-local espTags={}
-
-local function createESP(pl)
-    if espTags[pl] then return end
-    
-    local bill=Instance.new("BillboardGui")
-    bill.Name="ESP_"..pl.Name
-    bill.Size=UDim2.new(0,120,0,35)
-    bill.StudsOffset=Vector3.new(0,2.5,0)
-    bill.AlwaysOnTop=true
-    bill.Enabled=false
-    bill.Parent=guiParent
-    
-    local bg=Instance.new("Frame",bill)
-    bg.Size=UDim2.new(1,0,1,0)
-    bg.BackgroundColor3=Color3.fromRGB(0,0,0)
-    bg.BackgroundTransparency=0.2
-    bg.BorderSizePixel=0
-    Instance.new("UICorner",bg).CornerRadius=UDim.new(0,6)
-    
-    local nameLabel=Instance.new("TextLabel",bg)
-    nameLabel.Size=UDim2.new(1,0,0.6,0)
-    nameLabel.Position=UDim2.new(0,0,0,0)
-    nameLabel.BackgroundTransparency=1
-    nameLabel.Text=pl.Name
-    nameLabel.TextColor3=Color3.fromRGB(255,255,255)
-    nameLabel.TextSize=13
-    nameLabel.Font=Enum.Font.GothamBold
-    
-    local distLabel=Instance.new("TextLabel",bg)
-    distLabel.Size=UDim2.new(1,0,0.4,0)
-    distLabel.Position=UDim2.new(0,0,0.6,0)
-    distLabel.BackgroundTransparency=1
-    distLabel.Text="0m"
-    distLabel.TextColor3=Color3.fromRGB(100,255,100)
-    distLabel.TextSize=11
-    distLabel.Font=Enum.Font.Gotham
-    
-    espTags[pl]={bill=bill,name=nameLabel,dist=distLabel}
-end
-
-for _,pl in ipairs(p:GetPlayers()) do
-    if pl~=lp then createESP(pl) end
-end
-
-p.PlayerAdded:Connect(createESP)
-p.PlayerRemoving:Connect(function(pl)
-    if espTags[pl] then
-        espTags[pl].bill:Destroy()
-        espTags[pl]=nil
-    end
-end)
-
--- ========== ESP DE FRUTAS ==========
-local frutaTags={}
-
-local function criarESPFruta(obj)
-    if frutaTags[obj] then return end
-    
-    -- Verifica se é uma fruta (ajuste conforme o jogo)
-    local nome = obj.Name:lower()
-    if not (nome:find("fruit") or nome:find("fruta") or nome:find("apple") or nome:find("banana") or nome:find("magu") or nome:find("gomu") or nome:find("mera")) then
-        return
-    end
-    
-    local bill=Instance.new("BillboardGui")
-    bill.Name="FrutaESP_"..obj.Name
-    bill.Size=UDim2.new(0,80,0,30)
-    bill.StudsOffset=Vector3.new(0,1,0)
-    bill.AlwaysOnTop=true
-    bill.Enabled=false
-    bill.Parent=guiParent
-    
-    local bg=Instance.new("Frame",bill)
-    bg.Size=UDim2.new(1,0,1,0)
-    bg.BackgroundColor3=Color3.fromRGB(255,100,50)
-    bg.BackgroundTransparency=0.2
-    bg.BorderSizePixel=0
-    Instance.new("UICorner",bg).CornerRadius=UDim.new(0,6)
-    
-    local nameLabel=Instance.new("TextLabel",bg)
-    nameLabel.Size=UDim2.new(1,0,0.6,0)
-    nameLabel.Position=UDim2.new(0,0,0,0)
-    nameLabel.BackgroundTransparency=1
-    nameLabel.Text="🍎 FRUTA"
-    nameLabel.TextColor3=Color3.fromRGB(255,255,255)
-    nameLabel.TextSize=11
-    nameLabel.Font=Enum.Font.GothamBold
-    
-    local distLabel=Instance.new("TextLabel",bg)
-    distLabel.Size=UDim2.new(1,0,0.4,0)
-    distLabel.Position=UDim2.new(0,0,0.6,0)
-    distLabel.BackgroundTransparency=1
-    distLabel.Text="0m"
-    distLabel.TextColor3=Color3.fromRGB(255,255,255)
-    distLabel.TextSize=10
-    distLabel.Font=Enum.Font.Gotham
-    
-    frutaTags[obj]=bill
-end
-
--- Scan inicial de frutas
-for _,v in ipairs(workspace:GetDescendants()) do
-    criarESPFruta(v)
-end
-
--- Detectar novas frutas
-workspace.DescendantAdded:Connect(criarESPFruta)
-
--- ========== FUNÇÕES DE UTILIDADE ==========
-local function isAlly(pl)
-    if a.team=="" then return false end
-    local name=pl.Name:lower()
-    if a.team=="MARINHA" and (name:find("marine") or name:find("marinha") or name:find("soldado")) then return true end
-    if a.team=="PIRATA" and (name:find("pirata") or name:find("pirate") or name:find("bandit")) then return true end
-    return false
-end
-
-local function getTargets()
-    local targets={}
-    local cameraPos=cam.CFrame.Position
-    local mousePos=Vector2.new(mouse.X, mouse.Y)
-    
-    for _,pl in ipairs(p:GetPlayers())do
-        if pl~=lp and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health>0 then
-            if not isAlly(pl) then
-                local root=pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Torso")
-                if root then
-                    local rootPos=root.Position
-                    local dist3D=(rootPos-cameraPos).Magnitude
-                    
-                    if dist3D<=a.dist then
-                        local screenPos, onScreen=cam:WorldToViewportPoint(rootPos)
-                        
-                        if onScreen then
-                            local targetPos=Vector2.new(screenPos.X, screenPos.Y)
-                            local distFromMouse=(targetPos-mousePos).Magnitude
-                            
-                            if distFromMouse<=a.fov then
-                                table.insert(targets,{
-                                    pl=pl,
-                                    root=root,
-                                    dist2D=distFromMouse,
-                                    dist3D=dist3D,
-                                    screenPos=targetPos
-                                })
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    
-    table.sort(targets, function(x,y) return x.dist2D<y.dist2D end)
-    return targets
-end
-
-local function getESPPlayers()
-    local players={}
-    local cameraPos=cam.CFrame.Position
-    
-    for _,pl in ipairs(p:GetPlayers())do
-        if pl~=lp and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health>0 then
-            local root=pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Torso")
-            if root then
-                local dist3D=(root.Position-cameraPos).Magnitude
-                if dist3D<=a.espDist then
-                    table.insert(players,{pl=pl,root=root,dist=dist3D})
-                end
-            end
-        end
-    end
-    
-    return players
-end
-
-local function getFrutasProximas()
-    local frutas={}
-    local cameraPos=cam.CFrame.Position
-    
-    for obj,bill in pairs(frutaTags) do
-        if obj and obj.Parent then
-            local dist3D=(obj.Position-cameraPos).Magnitude
-            if dist3D<=a.frutaDist then
-                table.insert(frutas,{obj=obj,bill=bill,dist=dist3D})
-            end
-        end
-    end
-    
-    return frutas
-end
-
--- ========== LOOP PRINCIPAL ==========
-rs.RenderStepped:Connect(function()
-    -- Atualiza círculo
-    if a.aim and a.fovCircle then
-        circleGui.Enabled=true
-        local mousePos=Vector2.new(mouse.X, mouse.Y)
-        local viewport=cam.ViewportSize
-        
-        local x = mousePos.X - a.fov
-        local y = mousePos.Y - a.fov
-        
-        x = math.max(0, math.min(x, viewport.X - a.fov*2))
-        y = math.max(0, math.min(y, viewport.Y - a.fov*2))
-        
-        circleContainer.Position=UDim2.new(0,x,0,y)
-        circleContainer.Size=UDim2.new(0,a.fov*2,0,a.fov*2)
-        
-        local targets=getTargets()
-        if #targets>0 then
-            outerCircle.BorderColor3=Color3.fromRGB(255,100,100)
-            hLine.BackgroundColor3=Color3.fromRGB(255,100,100)
-            vLine.BackgroundColor3=Color3.fromRGB(255,100,100)
-            centerDot.BackgroundColor3=Color3.fromRGB(255,100,100)
-        else
-            outerCircle.BorderColor3=Color3.fromRGB(0,200,255)
-            hLine.BackgroundColor3=Color3.fromRGB(0,200,255)
-            vLine.BackgroundColor3=Color3.fromRGB(0,200,255)
-            centerDot.BackgroundColor3=Color3.fromRGB(255,255,255)
-        end
-    else
-        circleGui.Enabled=false
-    end
-    
-    -- AIMBOT COM LOCK-ON
-    if a.aim then
-        local targets=getTargets()
-        
-        if a.lockMode and currentTarget then
-            local targetStillValid = false
-            local targetPart = nil
-            
-            if currentTarget.Character and currentTarget.Character:FindFirstChild("Humanoid") and currentTarget.Character.Humanoid.Health>0 and not isAlly(currentTarget) then
-                local root = currentTarget.Character:FindFirstChild("HumanoidRootPart") or currentTarget.Character:FindFirstChild("Torso")
-                if root then
-                    local screenPos, onScreen = cam:WorldToViewportPoint(root.Position)
-                    if onScreen then
-                        local mousePos = Vector2.new(mouse.X, mouse.Y)
-                        local targetPos = Vector2.new(screenPos.X, screenPos.Y)
-                        local distFromMouse = (targetPos - mousePos).Magnitude
-                        if distFromMouse <= a.fov then
-                            targetStillValid = true
-                            targetPart = currentTarget.Character:FindFirstChild(a.aimPart) or root
-                        end
-                    end
-                end
-            end
-            
-            if targetStillValid and targetPart then
-                local cameraPos = cam.CFrame.Position
-                local targetPos = targetPart.Position
-                local direction = (targetPos - cameraPos).Unit
-                cam.CFrame = CFrame.new(cameraPos, cameraPos + direction)
-            else
-                currentTarget = nil
-            end
-        end
-        
-        if not currentTarget and #targets>0 then
-            currentTarget = targets[1].pl
-        end
-        
-        if not a.lockMode and #targets>0 then
-            currentTarget = targets[1].pl
-        end
-        
-        if currentTarget and currentTarget.Character then
-            local parte = currentTarget.Character:FindFirstChild(a.aimPart) or currentTarget.Character:FindFirstChild("HumanoidRootPart") or currentTarget.Character:FindFirstChild("Torso")
-            if parte then
-                local cameraPos = cam.CFrame.Position
-                local targetPos = parte.Position
-                local direction = (targetPos - cameraPos).Unit
-                cam.CFrame = CFrame.new(cameraPos, cameraPos + direction)
-            end
-        end
-    end
-    
-    -- SILENT AIM
-    if a.silent and currentTarget and currentTarget.Character then
-        local parte = currentTarget.Character:FindFirstChild(a.hitpart) or currentTarget.Character:FindFirstChild("HumanoidRootPart")
-        if parte then
-            if not silentHooked then
-                silentHooked = true
-                local mt = getrawmetatable(game)
-                local old = mt.__namecall
-                setreadonly(mt, false)
-                
-                mt.__namecall = function(self, ...)
-                    local args = {...}
-                    local method = getnamecallmethod()
-                    
-                    if a.silent and currentTarget and (method == "FireServer" or method == "InvokeServer") then
-                        local parte = currentTarget.Character:FindFirstChild(a.hitpart) or currentTarget.Character:FindFirstChild("HumanoidRootPart")
-                        if parte then
-                            for i = 1, #args do
-                                if type(args[i]) == "Vector3" then
-                                    args[i] = parte.Position
-                                    break
-                                elseif type(args[i]) == "CFrame" then
-                                    args[i] = CFrame.new(parte.Position)
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    
-                    return old(self, unpack(args))
-                end
-                
-                setreadonly(mt, true)
-            end
-        end
-    end
-    
-    -- ESP DE JOGADORES
-    if a.esp then
-        local espPlayers=getESPPlayers()
-        local espCount=0
-        
-        for _,data in ipairs(espPlayers) do
-            local esp=espTags[data.pl]
-            if esp and data.root then
-                local screenPos, onScreen=cam:WorldToViewportPoint(data.root.Position)
-                
-                if onScreen then
-                    esp.bill.Adornee=data.root
-                    esp.bill.Enabled=true
-                    espCount=espCount+1
-                    
-                    local ally=isAlly(data.pl)
-                    local isTarget = (currentTarget == data.pl)
-                    local color = isTarget and Color3.fromRGB(255,255,0) or (ally and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,100,100))
-                    
-                    esp.name.TextColor3=color
-                    esp.name.Text=(isTarget and "🎯 " or (ally and "🟢 " or "🔴 "))..data.pl.Name
-                    esp.dist.Text=math.floor(data.dist).."m"
-                    esp.dist.TextColor3=color
-                else
-                    esp.bill.Enabled=false
-                end
-            end
-        end
-        
-        for pl,esp in pairs(espTags) do
-            local found=false
-            for _,data in ipairs(espPlayers) do
-                if data.pl==pl then found=true break end
-            end
-            if not found then
-                esp.bill.Enabled=false
-            end
-        end
-        
-        playersLabel.Text="👥 JOGADORES: "..#p:GetPlayers()
-        espCountLabel.Text="📡 ESP JOG: "..#espPlayers
-    else
-        for _,esp in pairs(espTags) do
-            esp.bill.Enabled=false
-        end
-    end
-    
-    -- ESP DE FRUTAS
-    if a.espFrutas then
-        local frutasProximas=getFrutasProximas()
-        local frutaCount=0
-        
-        for _,data in ipairs(frutasProximas) do
-            local screenPos, onScreen=cam:WorldToViewportPoint(data.obj.Position)
-            
-            if onScreen then
-                data.bill.Adornee=data.obj
-                data.bill.Enabled=true
-                frutaCount=frutaCount+1
-                
-                local frame = data.bill:FindFirstChildWhichIsA("Frame")
-                if frame then
-                    local distLabel = frame:FindFirstChildWhichIsA("TextLabel")
-                    if distLabel then
-                        distLabel.Text=math.floor(data.dist).."m"
-                    end
-                end
-            else
-                data.bill.Enabled=false
-            end
-        end
-        
-        frutaCountLabel.Text="🍎 ESP FRUTAS: "..#frutasProximas
-        renderLabel.Text="🎮 RENDERIZANDO: "..(#frutasProximas + (#espTags or 0))
-    else
-        for _,bill in pairs(frutaTags) do
-            bill.Enabled=false
-        end
-        frutaCountLabel.Text="🍎 ESP FRUTAS: 0"
-    end
-end)
-
--- Inicialização
-updateStatus()
-print("✅ ZEKYO HUB V5 - ESP DE FRUTAS CARREGADO!")
-print("🎯 AIMBOT: DIST "..a.dist.." | FOV "..a.fov)
-print("👤 ESP JOG: DIST "..a.espDist)
-print("🍎 ESP FRUTAS: DIST "..a.frutaDist)
-print("🔒 LOCK-ON: "..(a.lockMode and "ATIVADO" or "DESATIVADO"))
+print("✅ ZEKYO HUB V5 - DESIGN TRANSPARENTE CARREGADO!")
+print("📌 Menu lateral com: MAIN • AIMBOT • ESP • CONFIGS • SILENT")
