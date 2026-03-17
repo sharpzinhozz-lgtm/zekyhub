@@ -1,4 +1,4 @@
--- ZEKYO HUB V5 - ULTRA OTIMIZADO (ZERO LAG)
+-- ZEKYO HUB V5 - ULTRA OTIMIZADO (DISTÂNCIA 100-9999 + PARTES)
 -- Performance máxima, consumo mínimo de CPU/RAM
 
 -- ========== SERVICES CACHE (MÁXIMA PERFORMANCE) ==========
@@ -22,6 +22,7 @@ local UDim2New = UDim2.new
 local math_floor = math.floor
 local math_clamp = math.clamp
 local math_random = math.random
+local math_sqrt = math.sqrt
 local table_insert = table.insert
 local table_sort = table.sort
 local pairs = pairs
@@ -30,35 +31,34 @@ local tick = tick
 local type = type
 local unpack = unpack
 local CFrame_new = CFrame.new
-local CFrame_lookAt = CFrame.lookAt
 
--- ========== CONFIGURAÇÕES COMPACTAS ==========
+-- ========== CONFIGURAÇÕES ==========
 local a = {
     aim = false,
     silent = false,
     esp = false,
     espFrutas = false,
-    dist = 500,            -- Valor médio otimizado
-    sens = 1.0,
+    dist = 500,            -- Distância padrão (ajustável)
+    sens = 1.0,            -- Sensibilidade (0.1-1.0)
     fov = 150,
-    espDist = 500,
-    frutaDist = 500,
+    espDist = 500,         -- Distância ESP jogadores
+    frutaDist = 500,       -- Distância ESP frutas
     team = "",
-    aimPart = "Head",
-    hitpart = "Head",
+    aimPart = "Head",      -- Parte do aimbot (Head/HumanoidRootPart/Torso)
+    hitpart = "Head",      -- Parte do silent
     fovCircle = true,
     keybind = Enum.KeyCode.X,
     keyMode = "TOGGLE",
     lockMode = true
 }
 
--- ========== VARIÁVEIS DE ESTADO (OTIMIZADAS) ==========
+-- ========== VARIÁVEIS DE ESTADO ==========
 local currentTarget = nil
 local silentHooked = false
 local listeningForKey = false
 
 -- Sistema de throttling (economiza CPU)
-local updateInterval = 0.05  -- Atualiza a cada 0.05 segundos (20 FPS para cálculos pesados)
+local updateInterval = 0.05
 local lastUpdate = 0
 local frameCount = 0
 local fpsTimer = tick()
@@ -66,7 +66,7 @@ local currentFPS = 60
 local pingSim = 30
 local espUpdateCounter = 0
 
--- Caches para evitar recriação
+-- Caches
 local espTags = {}
 local frutaTags = {}
 local circleGui = nil
@@ -74,6 +74,11 @@ local circleContainer = nil
 local outerCircle = nil
 local innerCircle = nil
 local centerDot = nil
+
+-- Sliders e toggles (para referência)
+local sensBox, distBox, fovBox, espDistBox, frutaDistBox = nil, nil, nil, nil, nil
+local aimToggle, lockToggle, fovToggle, espToggle, frutaToggle, silentToggle = nil, nil, nil, nil, nil, nil
+local partBtn, silentPartBtn = nil, nil
 
 -- ========== FUNÇÃO PARA CRIAR GUI COM FALLBACK ==========
 local function createGui()
@@ -100,7 +105,7 @@ end
 
 local guiParent = createGui()
 
--- ========== LOADING RÁPIDO (1 SEGUNDO) ==========
+-- ========== LOADING RÁPIDO ==========
 local function showLoading()
     local loadingGui = Instance.new("ScreenGui")
     loadingGui.Name = "ZekyoLoading"
@@ -136,7 +141,6 @@ local function showLoading()
     barFill.BackgroundColor3 = Color3RGB(0, 255, 200)
     Instance.new("UICorner", barFill).CornerRadius = UDim.new(0, 2)
     
-    -- Animação rápida (0.5 segundos)
     for i = 1, 5 do
         barFill.Size = UDim2New(i/5, 0, 1, 0)
         RunService.Heartbeat:Wait()
@@ -148,7 +152,7 @@ end
 
 showLoading()
 
--- ========== GUI PRINCIPAL (LEVE) ==========
+-- ========== GUI PRINCIPAL ==========
 local g = Instance.new("ScreenGui")
 g.Name = "ZekyoHub"
 g.ResetOnSpawn = false
@@ -157,8 +161,8 @@ g.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 g.DisplayOrder = 998
 
 local main = Instance.new("Frame")
-main.Size = UDim2New(0, 550, 0, 400)  -- Reduzido
-main.Position = UDim2New(0.5, -275, 0.5, -200)
+main.Size = UDim2New(0, 600, 0, 450)
+main.Position = UDim2New(0.5, -300, 0.5, -225)
 main.BackgroundColor3 = Color3RGB(0, 0, 0)
 main.BackgroundTransparency = 0.85
 main.BorderSizePixel = 0
@@ -173,9 +177,9 @@ border.Color = Color3RGB(0, 255, 200)
 border.Thickness = 1.5
 border.Transparency = 0.4
 
--- ========== MENU LATERAL (COMPACTO) ==========
+-- ========== MENU LATERAL ==========
 local menuLateral = Instance.new("Frame", main)
-menuLateral.Size = UDim2New(0, 90, 1, -16)
+menuLateral.Size = UDim2New(0, 100, 1, -16)
 menuLateral.Position = UDim2New(0, 8, 0, 8)
 menuLateral.BackgroundColor3 = Color3RGB(20, 20, 40)
 menuLateral.BackgroundTransparency = 0.3
@@ -192,7 +196,7 @@ menuTitle.TextColor3 = Color3RGB(0, 255, 200)
 menuTitle.TextSize = 14
 menuTitle.Font = Enum.Font.GothamBold
 
--- Botões (menos elementos)
+-- Botões
 local buttons = {}
 local buttonData = {
     {name = "MAIN", icon = "🏠", color = Color3RGB(100, 200, 255), y = 40},
@@ -216,10 +220,10 @@ for _, data in ipairs(buttonData) do
     buttons[data.name] = btn
 end
 
--- Status compacto
+-- Status
 local statusMenu = Instance.new("TextLabel", menuLateral)
 statusMenu.Size = UDim2New(0.86, 0, 0, 20)
-statusMenu.Position = UDim2New(0.07, 0, 0, 320)
+statusMenu.Position = UDim2New(0.07, 0, 0, 340)
 statusMenu.BackgroundColor3 = Color3RGB(0, 0, 0)
 statusMenu.BackgroundTransparency = 0.5
 statusMenu.Text = "🟢"
@@ -230,7 +234,7 @@ Instance.new("UICorner", statusMenu).CornerRadius = UDim.new(0, 4)
 -- Versão
 local version = Instance.new("TextLabel", menuLateral)
 version.Size = UDim2New(0.9, 0, 0, 16)
-version.Position = UDim2New(0.05, 0, 0, 350)
+version.Position = UDim2New(0.05, 0, 0, 370)
 version.BackgroundTransparency = 1
 version.Text = "v5.0"
 version.TextColor3 = Color3RGB(150, 150, 150)
@@ -238,41 +242,70 @@ version.TextSize = 8
 
 -- ========== CONTEÚDO PRINCIPAL ==========
 local content = Instance.new("Frame", main)
-content.Size = UDim2New(1, -105, 1, -16)
-content.Position = UDim2New(0, 98, 0, 8)
+content.Size = UDim2New(1, -115, 1, -16)
+content.Position = UDim2New(0, 108, 0, 8)
 content.BackgroundTransparency = 1
 
--- ========== FUNÇÕES DE INTERFACE (REUTILIZÁVEIS) ==========
+-- ========== FUNÇÕES DE INTERFACE ==========
+local function criarSlider(parent, nome, valor, min, max, y)
+    local bg = Instance.new("Frame", parent)
+    bg.Size = UDim2New(0.95, 0, 0, 30)
+    bg.Position = UDim2New(0, 0, 0, y)
+    bg.BackgroundTransparency = 1
+    
+    local label = Instance.new("TextLabel", bg)
+    label.Size = UDim2New(0.5, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = nome
+    label.TextColor3 = Color3RGB(200, 200, 200)
+    label.TextSize = 11
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Font = Enum.Font.Gotham
+    
+    local box = Instance.new("TextBox", bg)
+    box.Size = UDim2New(0.3, 0, 0, 22)
+    box.Position = UDim2New(0.65, 0, 0.5, -11)
+    box.BackgroundColor3 = Color3RGB(30, 30, 40)
+    box.BackgroundTransparency = 0.3
+    box.Text = tostring(valor)
+    box.TextColor3 = Color3RGB(0, 255, 200)
+    box.TextSize = 11
+    box.Font = Enum.Font.Gotham
+    box.ClearTextOnFocus = false
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
+    
+    return box
+end
+
 local function criarToggle(parent, texto, estado, y)
     local bg = Instance.new("Frame", parent)
     bg.Size = UDim2New(0.95, 0, 0, 24)
     bg.Position = UDim2New(0, 0, 0, y)
     bg.BackgroundTransparency = 1
-    bg.Name = "ToggleFrame"
     
     local label = Instance.new("TextLabel", bg)
     label.Size = UDim2New(0.7, 0, 1, 0)
     label.BackgroundTransparency = 1
     label.Text = texto
     label.TextColor3 = Color3RGB(200, 200, 200)
-    label.TextSize = 10
+    label.TextSize = 11
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Font = Enum.Font.Gotham
     
     local btn = Instance.new("TextButton", bg)
-    btn.Size = UDim2New(0.18, 0, 0, 20)
-    btn.Position = UDim2New(0.77, 0, 0.5, -10)
+    btn.Size = UDim2New(0.2, 0, 0, 20)
+    btn.Position = UDim2New(0.75, 0, 0.5, -10)
     btn.BackgroundColor3 = estado and Color3RGB(0, 120, 0) or Color3RGB(120, 40, 40)
     btn.Text = estado and "ON" or "OFF"
     btn.TextColor3 = Color3RGB(255, 255, 255)
-    btn.TextSize = 9
+    btn.TextSize = 10
     btn.Font = Enum.Font.GothamBold
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
     
     return btn
 end
 
--- ========== CRIAR CONTEÚDO DAS ABAS (APENAS UMA VEZ) ==========
+-- ========== CRIAR CONTEÚDO DAS ABAS ==========
 local mainCard = Instance.new("Frame", content)
 mainCard.Size = UDim2New(1, 0, 1, 0)
 mainCard.BackgroundColor3 = Color3RGB(20, 20, 30)
@@ -312,7 +345,7 @@ configCard.BorderSizePixel = 0
 configCard.Visible = false
 Instance.new("UICorner", configCard).CornerRadius = UDim.new(0, 12)
 
--- MAIN CARD (SIMPLES)
+-- ========== MAIN CARD ==========
 local mainTitle = Instance.new("TextLabel", mainCard)
 mainTitle.Size = UDim2New(1, 0, 0, 25)
 mainTitle.Position = UDim2New(0, 8, 0, 5)
@@ -327,7 +360,6 @@ statsFrame.Size = UDim2New(0.98, 0, 0, 50)
 statsFrame.Position = UDim2New(0.01, 0, 0, 30)
 statsFrame.BackgroundTransparency = 1
 
--- Stats simples (menos elementos)
 local playerStat = Instance.new("TextLabel", statsFrame)
 playerStat.Size = UDim2New(0.33, 0, 1, 0)
 playerStat.BackgroundTransparency = 1
@@ -351,7 +383,7 @@ fpsStat.Text = "⚡ 60"
 fpsStat.TextColor3 = Color3RGB(200, 200, 200)
 fpsStat.TextSize = 12
 
--- Módulos (compacto)
+-- Módulos
 local moduleFrame = Instance.new("Frame", mainCard)
 moduleFrame.Size = UDim2New(0.98, 0, 0, 80)
 moduleFrame.Position = UDim2New(0.01, 0, 0, 85)
@@ -397,21 +429,26 @@ for i = 1, 4 do
     moduleLabels[moduleNames[i]] = status
 end
 
--- AIM CARD (SIMPLES)
+-- ========== AIM CARD (COM TODOS CONTROLES) ==========
 local aimTitle = Instance.new("TextLabel", aimCard)
 aimTitle.Size = UDim2New(1, 0, 0, 25)
 aimTitle.Position = UDim2New(0, 8, 0, 5)
 aimTitle.BackgroundTransparency = 1
-aimTitle.Text = "🎯 AIM"
+aimTitle.Text = "🎯 AIMBOT"
 aimTitle.TextColor3 = Color3RGB(0, 200, 200)
 aimTitle.TextSize = 14
 
--- Toggles AIM
-local aimToggle = criarToggle(aimCard, "ATIVAR AIM", a.aim, 30)
-local lockToggle = criarToggle(aimCard, "LOCK-ON", a.lockMode, 55)
-local fovToggle = criarToggle(aimCard, "FOV", a.fovCircle, 80)
+-- Sliders AIM
+sensBox = criarSlider(aimCard, "SENSIBILIDADE", a.sens, 0.1, 1, 30)
+distBox = criarSlider(aimCard, "DISTÂNCIA (100-9999)", a.dist, 100, 9999, 65)
+fovBox = criarSlider(aimCard, "FOV", a.fov, 30, 500, 100)
 
--- ESP CARD
+-- Toggles AIM
+aimToggle = criarToggle(aimCard, "ATIVAR AIMBOT", a.aim, 135)
+lockToggle = criarToggle(aimCard, "LOCK-ON", a.lockMode, 160)
+fovToggle = criarToggle(aimCard, "FOV CIRCLE", a.fovCircle, 185)
+
+-- ========== ESP CARD (COM DISTÂNCIA) ==========
 local espTitle = Instance.new("TextLabel", espCard)
 espTitle.Size = UDim2New(1, 0, 0, 25)
 espTitle.Position = UDim2New(0, 8, 0, 5)
@@ -420,29 +457,33 @@ espTitle.Text = "👁️ ESP"
 espTitle.TextColor3 = Color3RGB(100, 200, 100)
 espTitle.TextSize = 14
 
-local espToggle = criarToggle(espCard, "ESP JOG", a.esp, 30)
-local frutaToggle = criarToggle(espCard, "ESP FRUTA", a.espFrutas, 55)
+espToggle = criarToggle(espCard, "ESP JOGADORES", a.esp, 30)
+espDistBox = criarSlider(espCard, "DIST JOG (100-9999)", a.espDist, 100, 9999, 55)
+frutaToggle = criarToggle(espCard, "ESP FRUTAS", a.espFrutas, 90)
+frutaDistBox = criarSlider(espCard, "DIST FRUTA (100-9999)", a.frutaDist, 100, 9999, 115)
 
--- SILENT CARD
+-- ========== SILENT CARD ==========
 local silentTitle = Instance.new("TextLabel", silentCard)
 silentTitle.Size = UDim2New(1, 0, 0, 25)
 silentTitle.Position = UDim2New(0, 8, 0, 5)
 silentTitle.BackgroundTransparency = 1
-silentTitle.Text = "🤫 SILENT"
+silentTitle.Text = "🤫 SILENT AIM"
 silentTitle.TextColor3 = Color3RGB(200, 100, 200)
 silentTitle.TextSize = 14
 
-local silentToggle = criarToggle(silentCard, "ATIVAR", a.silent, 30)
-local silentPartBtn = Instance.new("TextButton", silentCard)
-silentPartBtn.Size = UDim2New(0.3, 0, 0, 22)
-silentPartBtn.Position = UDim2New(0.35, 0, 0, 60)
+silentToggle = criarToggle(silentCard, "ATIVAR SILENT", a.silent, 30)
+local silentDistBox = criarSlider(silentCard, "DISTÂNCIA", a.dist, 100, 9999, 55)
+silentPartBtn = Instance.new("TextButton", silentCard)
+silentPartBtn.Size = UDim2New(0.4, 0, 0, 24)
+silentPartBtn.Position = UDim2New(0.3, 0, 0, 90)
 silentPartBtn.BackgroundColor3 = Color3RGB(80, 40, 120)
 silentPartBtn.Text = "HEAD"
 silentPartBtn.TextColor3 = Color3RGB(255, 255, 255)
-silentPartBtn.TextSize = 9
+silentPartBtn.TextSize = 10
+silentPartBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", silentPartBtn).CornerRadius = UDim.new(0, 4)
 
--- CONFIG CARD
+-- ========== CONFIG CARD (COM PARTES DO AIMBOT) ==========
 local configTitle = Instance.new("TextLabel", configCard)
 configTitle.Size = UDim2New(1, 0, 0, 25)
 configTitle.Position = UDim2New(0, 8, 0, 5)
@@ -451,6 +492,7 @@ configTitle.Text = "⚙️ CONFIG"
 configTitle.TextColor3 = Color3RGB(200, 180, 80)
 configTitle.TextSize = 14
 
+-- Keybind
 local keyBtn = Instance.new("TextButton", configCard)
 keyBtn.Size = UDim2New(0.25, 0, 0, 25)
 keyBtn.Position = UDim2New(0.1, 0, 0, 35)
@@ -460,50 +502,71 @@ keyBtn.TextColor3 = Color3RGB(255, 255, 255)
 keyBtn.TextSize = 12
 Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 4)
 
+-- Modo
 local modeBtn = Instance.new("TextButton", configCard)
 modeBtn.Size = UDim2New(0.3, 0, 0, 22)
 modeBtn.Position = UDim2New(0.45, 0, 0, 36)
 modeBtn.BackgroundColor3 = Color3RGB(60, 40, 100)
 modeBtn.Text = "TOGGLE"
 modeBtn.TextColor3 = Color3RGB(255, 255, 255)
-modeBtn.TextSize = 8
+modeBtn.TextSize = 9
 Instance.new("UICorner", modeBtn).CornerRadius = UDim.new(0, 4)
 
-local partBtn = Instance.new("TextButton", configCard)
-partBtn.Size = UDim2New(0.3, 0, 0, 22)
-partBtn.Position = UDim2New(0.1, 0, 0, 70)
+-- PARTE DO AIMBOT (HEAD/PEITO/TORSO)
+local parteLabel = Instance.new("TextLabel", configCard)
+parteLabel.Size = UDim2New(0.5, 0, 0, 16)
+parteLabel.Position = UDim2New(0.1, 0, 0, 70)
+parteLabel.BackgroundTransparency = 1
+parteLabel.Text = "PARTE AIMBOT:"
+parteLabel.TextColor3 = Color3RGB(180, 180, 180)
+parteLabel.TextSize = 9
+parteLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+partBtn = Instance.new("TextButton", configCard)
+partBtn.Size = UDim2New(0.3, 0, 0, 24)
+partBtn.Position = UDim2New(0.1, 0, 0, 86)
 partBtn.BackgroundColor3 = Color3RGB(100, 40, 60)
 partBtn.Text = "HEAD"
 partBtn.TextColor3 = Color3RGB(255, 255, 255)
-partBtn.TextSize = 8
+partBtn.TextSize = 10
+partBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", partBtn).CornerRadius = UDim.new(0, 4)
 
 -- Time buttons
+local timeLabel = Instance.new("TextLabel", configCard)
+timeLabel.Size = UDim2New(0.5, 0, 0, 16)
+timeLabel.Position = UDim2New(0.1, 0, 0, 120)
+timeLabel.BackgroundTransparency = 1
+timeLabel.Text = "TIME:"
+timeLabel.TextColor3 = Color3RGB(180, 180, 180)
+timeLabel.TextSize = 9
+timeLabel.TextXAlignment = Enum.TextXAlignment.Left
+
 local mBtn = Instance.new("TextButton", configCard)
 mBtn.Size = UDim2New(0.2, 0, 0, 22)
-mBtn.Position = UDim2New(0.1, 0, 0, 105)
+mBtn.Position = UDim2New(0.1, 0, 0, 136)
 mBtn.BackgroundColor3 = Color3RGB(0, 80, 160)
 mBtn.Text = "MAR"
 mBtn.TextColor3 = Color3RGB(255, 255, 255)
-mBtn.TextSize = 8
+mBtn.TextSize = 9
 Instance.new("UICorner", mBtn).CornerRadius = UDim.new(0, 4)
 
 local pBtn = Instance.new("TextButton", configCard)
 pBtn.Size = UDim2New(0.2, 0, 0, 22)
-pBtn.Position = UDim2New(0.4, 0, 0, 105)
+pBtn.Position = UDim2New(0.4, 0, 0, 136)
 pBtn.BackgroundColor3 = Color3RGB(160, 40, 40)
 pBtn.Text = "PIR"
 pBtn.TextColor3 = Color3RGB(255, 255, 255)
-pBtn.TextSize = 8
+pBtn.TextSize = 9
 Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 4)
 
 local nBtn = Instance.new("TextButton", configCard)
 nBtn.Size = UDim2New(0.2, 0, 0, 22)
-nBtn.Position = UDim2New(0.7, 0, 0, 105)
+nBtn.Position = UDim2New(0.7, 0, 0, 136)
 nBtn.BackgroundColor3 = Color3RGB(80, 80, 80)
 nBtn.Text = "NEU"
 nBtn.TextColor3 = Color3RGB(255, 255, 255)
-nBtn.TextSize = 8
+nBtn.TextSize = 9
 Instance.new("UICorner", nBtn).CornerRadius = UDim.new(0, 4)
 
 -- ========== NAVEGAÇÃO ENTRE ABAS ==========
@@ -525,43 +588,74 @@ buttons.CONFIG.MouseButton1Click:Connect(function() showTab("CONFIG") end)
 aimToggle.MouseButton1Click:Connect(function()
     a.aim = not a.aim
     aimToggle.Text = a.aim and "ON" or "OFF"
-    aimToggle.BackgroundColor3 = a.aim and Color3RGB(0, 100, 0) or Color3RGB(100, 30, 30)
+    aimToggle.BackgroundColor3 = a.aim and Color3RGB(0, 120, 0) or Color3RGB(120, 40, 40)
     if not a.aim then currentTarget = nil end
 end)
 
 lockToggle.MouseButton1Click:Connect(function()
     a.lockMode = not a.lockMode
     lockToggle.Text = a.lockMode and "ON" or "OFF"
-    lockToggle.BackgroundColor3 = a.lockMode and Color3RGB(0, 100, 0) or Color3RGB(100, 30, 30)
+    lockToggle.BackgroundColor3 = a.lockMode and Color3RGB(0, 120, 0) or Color3RGB(120, 40, 40)
     if not a.lockMode then currentTarget = nil end
 end)
 
 fovToggle.MouseButton1Click:Connect(function()
     a.fovCircle = not a.fovCircle
     fovToggle.Text = a.fovCircle and "ON" or "OFF"
-    fovToggle.BackgroundColor3 = a.fovCircle and Color3RGB(0, 100, 0) or Color3RGB(100, 30, 30)
+    fovToggle.BackgroundColor3 = a.fovCircle and Color3RGB(0, 120, 0) or Color3RGB(120, 40, 40)
 end)
 
 espToggle.MouseButton1Click:Connect(function()
     a.esp = not a.esp
     espToggle.Text = a.esp and "ON" or "OFF"
-    espToggle.BackgroundColor3 = a.esp and Color3RGB(0, 100, 0) or Color3RGB(100, 30, 30)
+    espToggle.BackgroundColor3 = a.esp and Color3RGB(0, 120, 0) or Color3RGB(120, 40, 40)
 end)
 
 frutaToggle.MouseButton1Click:Connect(function()
     a.espFrutas = not a.espFrutas
     frutaToggle.Text = a.espFrutas and "ON" or "OFF"
-    frutaToggle.BackgroundColor3 = a.espFrutas and Color3RGB(0, 100, 0) or Color3RGB(100, 30, 30)
+    frutaToggle.BackgroundColor3 = a.espFrutas and Color3RGB(0, 120, 0) or Color3RGB(120, 40, 40)
 end)
 
 silentToggle.MouseButton1Click:Connect(function()
     a.silent = not a.silent
     silentToggle.Text = a.silent and "ON" or "OFF"
-    silentToggle.BackgroundColor3 = a.silent and Color3RGB(0, 100, 0) or Color3RGB(100, 30, 30)
+    silentToggle.BackgroundColor3 = a.silent and Color3RGB(0, 120, 0) or Color3RGB(120, 40, 40)
 end)
 
--- Partes do corpo
-local partes = {"Head", "Root", "Torso"}
+-- Sliders
+sensBox.FocusLost:Connect(function()
+    local n = tonumber(sensBox.Text)
+    if n and n >= 0.1 and n <= 1 then a.sens = n end
+    sensBox.Text = tostring(a.sens)
+end)
+
+distBox.FocusLost:Connect(function()
+    local n = tonumber(distBox.Text)
+    if n and n >= 100 and n <= 9999 then a.dist = n else a.dist = 500 end
+    distBox.Text = tostring(a.dist)
+end)
+
+fovBox.FocusLost:Connect(function()
+    local n = tonumber(fovBox.Text)
+    if n and n >= 30 and n <= 500 then a.fov = n end
+    fovBox.Text = tostring(a.fov)
+end)
+
+espDistBox.FocusLost:Connect(function()
+    local n = tonumber(espDistBox.Text)
+    if n and n >= 100 and n <= 9999 then a.espDist = n else a.espDist = 500 end
+    espDistBox.Text = tostring(a.espDist)
+end)
+
+frutaDistBox.FocusLost:Connect(function()
+    local n = tonumber(frutaDistBox.Text)
+    if n and n >= 100 and n <= 9999 then a.frutaDist = n else a.frutaDist = 500 end
+    frutaDistBox.Text = tostring(a.frutaDist)
+end)
+
+-- Partes do corpo (Head/HumanoidRootPart/Torso)
+local partes = {"Head", "HumanoidRootPart", "Torso"}
 local pIdx = 1
 partBtn.MouseButton1Click:Connect(function()
     pIdx = pIdx % #partes + 1
@@ -592,14 +686,13 @@ modeBtn.MouseButton1Click:Connect(function()
     modeBtn.Text = a.keyMode
 end)
 
--- ========== CÍRCULO FOV (LEVE) ==========
+-- ========== CÍRCULO FOV ==========
 circleGui = Instance.new("ScreenGui")
 circleGui.Name = "CircleCursor"
 circleGui.ResetOnSpawn = false
 circleGui.Parent = guiParent
 circleGui.Enabled = false
 circleGui.DisplayOrder = 999
-circleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 circleContainer = Instance.new("Frame")
 circleContainer.Size = UDim2New(0, a.fov*2, 0, a.fov*2)
@@ -628,13 +721,13 @@ centerDot.BackgroundColor3 = Color3RGB(255, 255, 255)
 centerDot.BorderSizePixel = 0
 Instance.new("UICorner", centerDot).CornerRadius = UDim.new(1, 0)
 
--- ========== ESP (LEVE) ==========
+-- ========== ESP ==========
 local function createESP(pl)
     if espTags[pl] then return end
     
     local bill = Instance.new("BillboardGui")
     bill.Name = "ESP_"..pl.Name
-    bill.Size = UDim2New(0, 70, 0, 20)
+    bill.Size = UDim2New(0, 80, 0, 22)
     bill.StudsOffset = Vector3.new(0, 2, 0)
     bill.AlwaysOnTop = true
     bill.Enabled = false
@@ -651,7 +744,7 @@ local function createESP(pl)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = pl.Name
     nameLabel.TextColor3 = Color3RGB(255, 255, 255)
-    nameLabel.TextSize = 9
+    nameLabel.TextSize = 10
     nameLabel.Font = Enum.Font.GothamBold
     
     espTags[pl] = {bill = bill, label = nameLabel}
@@ -669,7 +762,49 @@ Players.PlayerRemoving:Connect(function(pl)
     end
 end)
 
--- ========== FUNÇÕES AUXILIARES (OTIMIZADAS) ==========
+-- ========== ESP DE FRUTAS ==========
+local function criarESPFruta(obj)
+    if frutaTags[obj] then return end
+    
+    local nome = obj.Name:lower()
+    local isFruit = nome:find("fruit") or nome:find("fruta") or nome:find("apple") or nome:find("banana") 
+        or nome:find("magu") or nome:find("gomu") or nome:find("mera") 
+        or obj:IsA("Tool") or obj:IsA("Part") or obj:IsA("MeshPart")
+    
+    if not isFruit then return end
+    
+    local bill = Instance.new("BillboardGui")
+    bill.Name = "FrutaESP_"..obj.Name
+    bill.Size = UDim2New(0, 60, 0, 20)
+    bill.StudsOffset = Vector3.new(0, 1, 0)
+    bill.AlwaysOnTop = true
+    bill.Enabled = false
+    bill.Parent = guiParent
+    
+    local bg = Instance.new("Frame", bill)
+    bg.Size = UDim2New(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3RGB(255, 100, 50)
+    bg.BackgroundTransparency = 0.2
+    Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 4)
+    
+    local nameLabel = Instance.new("TextLabel", bg)
+    nameLabel.Size = UDim2New(1, 0, 1, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = "🍎"
+    nameLabel.TextColor3 = Color3RGB(255, 255, 255)
+    nameLabel.TextSize = 12
+    nameLabel.Font = Enum.Font.GothamBold
+    
+    frutaTags[obj] = bill
+end
+
+for _, v in ipairs(Workspace:GetDescendants()) do
+    criarESPFruta(v)
+end
+
+Workspace.DescendantAdded:Connect(criarESPFruta)
+
+-- ========== FUNÇÕES AUXILIARES ==========
 local function isAlly(pl)
     if a.team == "" then return false end
     local name = pl.Name:lower()
@@ -682,7 +817,7 @@ local function getTargets()
     local targets = {}
     local cameraPos = Camera.CFrame.Position
     local mousePos = Vector2New(Mouse.X, Mouse.Y)
-    local fovSq = a.fov * a.fov  -- Usa quadrado para evitar sqrt
+    local fovSq = a.fov * a.fov
     
     for _, pl in ipairs(Players:GetPlayers()) do
         if pl ~= LocalPlayer and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health > 0 and not isAlly(pl) then
@@ -699,7 +834,7 @@ local function getTargets()
                             table_insert(targets, {
                                 pl = pl,
                                 root = root,
-                                dist2D = math_sqrt and math.sqrt(distFromMouseSq) or distFromMouseSq,
+                                dist2D = math_sqrt(distFromMouseSq),
                                 dist3D = dist3D
                             })
                         end
@@ -713,15 +848,13 @@ local function getTargets()
     return targets
 end
 
--- ========== LOOP PRINCIPAL ULTRA OTIMIZADO ==========
+-- ========== LOOP PRINCIPAL ==========
 RunService.RenderStepped:Connect(function()
     local now = tick()
     
-    -- Atualiza stats a cada 0.2 segundos (5x por segundo)
+    -- Atualiza stats a cada 0.2 segundos
     if now - lastUpdate > 0.2 then
         lastUpdate = now
-        
-        -- FPS
         frameCount = frameCount + 1
         if now - fpsTimer >= 1 then
             currentFPS = frameCount
@@ -729,12 +862,10 @@ RunService.RenderStepped:Connect(function()
             fpsTimer = now
         end
         
-        -- Update UI
         playerStat.Text = "👥 "..#Players:GetPlayers()
         pingStat.Text = "📶 "..math_random(20, 60).."ms"
         fpsStat.Text = "⚡ "..currentFPS
         
-        -- Module status
         moduleLabels.AIM.Text = a.aim and "ON" or "OFF"
         moduleLabels.AIM.TextColor3 = a.aim and Color3RGB(0, 180, 0) or Color3RGB(180, 60, 60)
         moduleLabels.SILENT.Text = a.silent and "ON" or "OFF"
@@ -745,18 +876,21 @@ RunService.RenderStepped:Connect(function()
         moduleLabels.FRUTAS.TextColor3 = a.espFrutas and Color3RGB(0, 180, 0) or Color3RGB(180, 60, 60)
     end
     
-    -- FOV Circle (sempre atualiza se ativo)
+    -- FOV Circle
     if a.aim and a.fovCircle then
         circleGui.Enabled = true
         local x = math_clamp(Mouse.X - a.fov, 0, Camera.ViewportSize.X - a.fov*2)
         local y = math_clamp(Mouse.Y - a.fov, 0, Camera.ViewportSize.Y - a.fov*2)
         circleContainer.Position = UDim2New(0, x, 0, y)
         circleContainer.Size = UDim2New(0, a.fov*2, 0, a.fov*2)
+        
+        local targets = getTargets()
+        outerCircle.BorderColor3 = #targets > 0 and Color3RGB(255, 100, 100) or Color3RGB(0, 200, 255)
     else
         circleGui.Enabled = false
     end
     
-    -- AIMBOT (executa sempre)
+    -- AIMBOT (sempre grudando quando ativo)
     if a.aim then
         local targets = getTargets()
         
@@ -803,7 +937,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
     
-    -- ESP (executa a cada 2 frames para economizar)
+    -- ESP (a cada 2 frames)
     espUpdateCounter = espUpdateCounter + 1
     if espUpdateCounter % 2 == 0 then
         if a.esp then
@@ -820,9 +954,7 @@ RunService.RenderStepped:Connect(function()
                                 
                                 local ally = isAlly(pl)
                                 local isTarget = (currentTarget == pl)
-                                local color = isTarget and Color3RGB(255, 200, 0) or (ally and Color3RGB(0, 200, 0) or Color3RGB(200, 60, 60))
-                                
-                                data.label.TextColor3 = color
+                                data.label.TextColor3 = isTarget and Color3RGB(255, 200, 0) or (ally and Color3RGB(0, 200, 0) or Color3RGB(200, 60, 60))
                                 data.label.Text = (isTarget and "🎯 " or (ally and "🟢 " or "🔴 "))..pl.Name
                             else
                                 data.bill.Enabled = false
@@ -840,6 +972,32 @@ RunService.RenderStepped:Connect(function()
         else
             for _, data in pairs(espTags) do
                 data.bill.Enabled = false
+            end
+        end
+        
+        -- ESP Frutas
+        if a.espFrutas then
+            for obj, bill in pairs(frutaTags) do
+                if obj and obj.Parent then
+                    local dist = (obj.Position - Camera.CFrame.Position).Magnitude
+                    if dist <= a.frutaDist then
+                        local screenPos, onScreen = WorldToViewportPoint(Camera, obj.Position)
+                        if onScreen then
+                            bill.Adornee = obj
+                            bill.Enabled = true
+                        else
+                            bill.Enabled = false
+                        end
+                    else
+                        bill.Enabled = false
+                    end
+                else
+                    bill.Enabled = false
+                end
+            end
+        else
+            for _, bill in pairs(frutaTags) do
+                bill.Enabled = false
             end
         end
     end
@@ -860,12 +1018,12 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if a.keyMode == "TOGGLE" then
             a.aim = not a.aim
             aimToggle.Text = a.aim and "ON" or "OFF"
-            aimToggle.BackgroundColor3 = a.aim and Color3RGB(0, 100, 0) or Color3RGB(100, 30, 30)
+            aimToggle.BackgroundColor3 = a.aim and Color3RGB(0, 120, 0) or Color3RGB(120, 40, 40)
             if not a.aim then currentTarget = nil end
         else
             a.aim = true
             aimToggle.Text = "ON"
-            aimToggle.BackgroundColor3 = Color3RGB(0, 100, 0)
+            aimToggle.BackgroundColor3 = Color3RGB(0, 120, 0)
         end
     end
     
@@ -880,9 +1038,13 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
     if a.keyMode == "HOLD" and input.KeyCode == a.keybind then
         a.aim = false
         aimToggle.Text = "OFF"
-        aimToggle.BackgroundColor3 = Color3RGB(100, 30, 30)
+        aimToggle.BackgroundColor3 = Color3RGB(120, 40, 40)
         currentTarget = nil
     end
 end)
 
-print("✅ ZEKYO HUB ULTRA OTIMIZADO - ZERO LAG")
+print("✅ ZEKYO HUB - VERSÃO COMPLETA")
+print("🎯 AIMBOT: Distância "..a.dist.." | Sensibilidade "..a.sens)
+print("👤 ESP JOG: Distância "..a.espDist)
+print("🍎 ESP FRUTA: Distância "..a.frutaDist)
+print("🔧 Partes: HEAD • ROOT • TORSO")
