@@ -1,4 +1,4 @@
--- ZEKYO HUB V5 - ULTRA OTIMIZADO (DISTÂNCIA 100-9999 + PARTES)
+-- ZEKYO HUB V5 - ULTRA OTIMIZADO (SEM LOADING)
 -- Performance máxima, consumo mínimo de CPU/RAM
 
 -- ========== SERVICES CACHE (MÁXIMA PERFORMANCE) ==========
@@ -104,53 +104,6 @@ local function createGui()
 end
 
 local guiParent = createGui()
-
--- ========== LOADING RÁPIDO ==========
-local function showLoading()
-    local loadingGui = Instance.new("ScreenGui")
-    loadingGui.Name = "ZekyoLoading"
-    loadingGui.ResetOnSpawn = false
-    loadingGui.Parent = guiParent
-    loadingGui.DisplayOrder = 1000
-    
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2New(0, 250, 0, 150)
-    frame.Position = UDim2New(0.5, -125, 0.5, -75)
-    frame.BackgroundColor3 = Color3RGB(5, 5, 15)
-    frame.BackgroundTransparency = 0.1
-    frame.Parent = loadingGui
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
-    
-    local title = Instance.new("TextLabel", frame)
-    title.Size = UDim2New(1, 0, 0, 40)
-    title.Position = UDim2New(0, 0, 0, 15)
-    title.BackgroundTransparency = 1
-    title.Text = "ZEKYO HUB"
-    title.TextColor3 = Color3RGB(0, 255, 200)
-    title.TextSize = 24
-    title.Font = Enum.Font.GothamBold
-    
-    local barBg = Instance.new("Frame", frame)
-    barBg.Size = UDim2New(0.8, 0, 0, 4)
-    barBg.Position = UDim2New(0.1, 0, 0, 80)
-    barBg.BackgroundColor3 = Color3RGB(30, 30, 40)
-    Instance.new("UICorner", barBg).CornerRadius = UDim.new(0, 2)
-    
-    local barFill = Instance.new("Frame", barBg)
-    barFill.Size = UDim2New(0, 0, 1, 0)
-    barFill.BackgroundColor3 = Color3RGB(0, 255, 200)
-    Instance.new("UICorner", barFill).CornerRadius = UDim.new(0, 2)
-    
-    for i = 1, 5 do
-        barFill.Size = UDim2New(i/5, 0, 1, 0)
-        RunService.Heartbeat:Wait()
-    end
-    
-    wait(0.1)
-    loadingGui:Destroy()
-end
-
-showLoading()
 
 -- ========== GUI PRINCIPAL ==========
 local g = Instance.new("ScreenGui")
@@ -1043,7 +996,7 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
     end
 end)
 
-print("✅ ZEKYO HUB - VERSÃO COMPLETA")
+print("✅ ZEKYO HUB - VERSÃO COMPLETA (SEM LOADING)")
 print("🎯 AIMBOT: Distância "..a.dist.." | Sensibilidade "..a.sens)
 print("👤 ESP JOG: Distância "..a.espDist)
 print("🍎 ESP FRUTA: Distância "..a.frutaDist)
