@@ -1,5 +1,6 @@
--- ZEKYO HUB V5 - VERSÃO OTIMIZADA
+-- ZEKYO HUB V5 - DISTÂNCIA INFINITA
 -- Performance melhorada, menos consumo de CPU/RAM
+-- Todas as distâncias agora são infinitas (9999)
 
 -- ========== SERVICES (CACHE) ==========
 local Players = game:GetService("Players")
@@ -29,17 +30,17 @@ local ipairs = ipairs
 local type = type
 local unpack = unpack
 
--- ========== CONFIGURAÇÕES ==========
+-- ========== CONFIGURAÇÕES (DISTÂNCIA INFINITA = 9999) ==========
 local a = {
     aim = false,
     silent = false,
     esp = false,
     espFrutas = false,
-    dist = 80,
+    dist = 9999,           -- INFINITO
     sens = 1.0,
     fov = 150,
-    espDist = 150,
-    frutaDist = 150,
+    espDist = 9999,        -- INFINITO
+    frutaDist = 9999,      -- INFINITO
     team = "",
     aimPart = "Head",
     hitpart = "Head",
@@ -230,7 +231,7 @@ local version = Instance.new("TextLabel", menuLateral)
 version.Size = UDim2New(0.9, 0, 0, 20)
 version.Position = UDim2New(0.05, 0, 0, 395)
 version.BackgroundTransparency = 1
-version.Text = "v5.0 • F6"
+version.Text = "v5.0 • INFINITO • F6"
 version.TextColor3 = Color3RGB(150, 150, 150)
 version.TextSize = 9
 
@@ -264,6 +265,7 @@ local function criarSlider(parent, nome, valor, y)
     box.TextColor3 = Color3RGB(0, 255, 200)
     box.TextSize = 12
     box.Font = Enum.Font.Gotham
+    box.ClearTextOnFocus = false
     Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
     
     return box
@@ -318,7 +320,7 @@ local mainTitle = Instance.new("TextLabel", mainCard)
 mainTitle.Size = UDim2New(1, 0, 0, 35)
 mainTitle.Position = UDim2New(0, 10, 0, 5)
 mainTitle.BackgroundTransparency = 1
-mainTitle.Text = "🏠 MAIN"
+mainTitle.Text = "🏠 MAIN (DISTÂNCIA INFINITA)"
 mainTitle.TextColor3 = Color3RGB(255, 255, 255)
 mainTitle.TextSize = 16
 mainTitle.Font = Enum.Font.GothamBold
@@ -425,7 +427,7 @@ local aimTitle = Instance.new("TextLabel", aimCard)
 aimTitle.Size = UDim2New(1, 0, 0, 35)
 aimTitle.Position = UDim2New(0, 10, 0, 5)
 aimTitle.BackgroundTransparency = 1
-aimTitle.Text = "🎯 AIMBOT"
+aimTitle.Text = "🎯 AIMBOT (DISTÂNCIA INFINITA)"
 aimTitle.TextColor3 = Color3RGB(0, 255, 200)
 aimTitle.TextSize = 16
 aimTitle.Font = Enum.Font.GothamBold
@@ -438,7 +440,7 @@ aimControls.Position = UDim2New(0.03, 0, 0.1, 0)
 aimControls.BackgroundTransparency = 1
 
 local sensBox = criarSlider(aimControls, "SENSIBILIDADE", a.sens, 0)
-local distBox = criarSlider(aimControls, "DISTÂNCIA", a.dist, 40)
+local distBox = criarSlider(aimControls, "DISTÂNCIA (INFINITA)", a.dist, 40)
 local fovBox = criarSlider(aimControls, "FOV", a.fov, 80)
 
 local aimToggle = criarToggle(aimControls, "ATIVAR AIMBOT", a.aim, 130)
@@ -458,7 +460,7 @@ local espTitle = Instance.new("TextLabel", espCard)
 espTitle.Size = UDim2New(1, 0, 0, 35)
 espTitle.Position = UDim2New(0, 10, 0, 5)
 espTitle.BackgroundTransparency = 1
-espTitle.Text = "👁️ ESP"
+espTitle.Text = "👁️ ESP (DISTÂNCIA INFINITA)"
 espTitle.TextColor3 = Color3RGB(100, 255, 100)
 espTitle.TextSize = 16
 espTitle.Font = Enum.Font.GothamBold
@@ -470,9 +472,9 @@ espControls.Position = UDim2New(0.03, 0, 0.1, 0)
 espControls.BackgroundTransparency = 1
 
 local espToggle = criarToggle(espControls, "ATIVAR ESP", a.esp, 0)
-local espDistBox = criarSlider(espControls, "DISTÂNCIA JOG", a.espDist, 35)
+local espDistBox = criarSlider(espControls, "DIST JOG (INFINITA)", a.espDist, 35)
 local frutaToggle = criarToggle(espControls, "ESP FRUTAS", a.espFrutas, 80)
-local frutaDistBox = criarSlider(espControls, "DISTÂNCIA FRUTA", a.frutaDist, 115)
+local frutaDistBox = criarSlider(espControls, "DIST FRUTA (INFINITA)", a.frutaDist, 115)
 
 -- SILENT TAB
 local silentCard = Instance.new("Frame", content)
@@ -487,7 +489,7 @@ local silentTitle = Instance.new("TextLabel", silentCard)
 silentTitle.Size = UDim2New(1, 0, 0, 35)
 silentTitle.Position = UDim2New(0, 10, 0, 5)
 silentTitle.BackgroundTransparency = 1
-silentTitle.Text = "🤫 SILENT AIM"
+silentTitle.Text = "🤫 SILENT AIM (DISTÂNCIA INFINITA)"
 silentTitle.TextColor3 = Color3RGB(255, 100, 255)
 silentTitle.TextSize = 16
 silentTitle.Font = Enum.Font.GothamBold
@@ -499,7 +501,7 @@ silentControls.Position = UDim2New(0.03, 0, 0.1, 0)
 silentControls.BackgroundTransparency = 1
 
 local silentToggleBtn = criarToggle(silentControls, "ATIVAR SILENT", a.silent, 0)
-local silentDistBox = criarSlider(silentControls, "DISTÂNCIA", a.dist, 35)
+local silentDistBox = criarSlider(silentControls, "DISTÂNCIA (INFINITA)", a.dist, 35)
 local silentPartBtn = Instance.new("TextButton", silentControls)
 silentPartBtn.Size = UDim2New(0.4, 0, 0, 30)
 silentPartBtn.Position = UDim2New(0.3, 0, 0, 75)
@@ -658,7 +660,7 @@ silentToggleBtn.MouseButton1Click:Connect(function()
     silentToggleBtn.BackgroundColor3 = a.silent and Color3RGB(0, 150, 0) or Color3RGB(150, 50, 50)
 end)
 
--- Sliders
+-- Sliders (sempre mantém 9999)
 sensBox.FocusLost:Connect(function()
     local n = tonumber(sensBox.Text)
     if n and n >= 0.1 and n <= 1 then a.sens = n end
@@ -666,9 +668,8 @@ sensBox.FocusLost:Connect(function()
 end)
 
 distBox.FocusLost:Connect(function()
-    local n = tonumber(distBox.Text)
-    if n and n >= 10 and n <= 999 then a.dist = n end
-    distBox.Text = tostring(a.dist)
+    a.dist = 9999
+    distBox.Text = "9999"
 end)
 
 fovBox.FocusLost:Connect(function()
@@ -678,21 +679,18 @@ fovBox.FocusLost:Connect(function()
 end)
 
 espDistBox.FocusLost:Connect(function()
-    local n = tonumber(espDistBox.Text)
-    if n and n >= 30 and n <= 999 then a.espDist = n end
-    espDistBox.Text = tostring(a.espDist)
+    a.espDist = 9999
+    espDistBox.Text = "9999"
 end)
 
 frutaDistBox.FocusLost:Connect(function()
-    local n = tonumber(frutaDistBox.Text)
-    if n and n >= 30 and n <= 999 then a.frutaDist = n end
-    frutaDistBox.Text = tostring(a.frutaDist)
+    a.frutaDist = 9999
+    frutaDistBox.Text = "9999"
 end)
 
 silentDistBox.FocusLost:Connect(function()
-    local n = tonumber(silentDistBox.Text)
-    if n and n >= 10 and n <= 999 then a.dist = n end
-    silentDistBox.Text = tostring(a.dist)
+    a.dist = 9999
+    silentDistBox.Text = "9999"
 end)
 
 -- Partes do corpo
@@ -813,6 +811,59 @@ Players.PlayerRemoving:Connect(function(pl)
     end
 end)
 
+-- ========== ESP DE FRUTAS ==========
+local function criarESPFruta(obj)
+    if frutaTags[obj] then return end
+    
+    -- Verifica se é uma fruta
+    local nome = obj.Name:lower()
+    local isFruit = nome:find("fruit") or nome:find("fruta") or nome:find("apple") or nome:find("banana") 
+        or nome:find("magu") or nome:find("gomu") or nome:find("mera") 
+        or obj:IsA("Tool") or obj:IsA("Part") or obj:IsA("MeshPart")
+    
+    if not isFruit then return end
+    
+    local bill = Instance.new("BillboardGui")
+    bill.Name = "FrutaESP_"..obj.Name
+    bill.Size = UDim2New(0, 80, 0, 30)
+    bill.StudsOffset = Vector3.new(0, 1, 0)
+    bill.AlwaysOnTop = true
+    bill.Enabled = false
+    bill.Parent = guiParent
+    
+    local bg = Instance.new("Frame", bill)
+    bg.Size = UDim2New(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3RGB(255, 100, 50)
+    bg.BackgroundTransparency = 0.2
+    Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 6)
+    
+    local nameLabel = Instance.new("TextLabel", bg)
+    nameLabel.Size = UDim2New(1, 0, 0.6, 0)
+    nameLabel.Position = UDim2New(0, 0, 0, 2)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = "🍎 FRUTA"
+    nameLabel.TextColor3 = Color3RGB(255, 255, 255)
+    nameLabel.TextSize = 11
+    nameLabel.Font = Enum.Font.GothamBold
+    
+    local distLabel = Instance.new("TextLabel", bg)
+    distLabel.Size = UDim2New(1, 0, 0.4, 0)
+    distLabel.Position = UDim2New(0, 0, 0.6, -2)
+    distLabel.BackgroundTransparency = 1
+    distLabel.Text = "0m"
+    distLabel.TextColor3 = Color3RGB(255, 255, 255)
+    distLabel.TextSize = 9
+    
+    frutaTags[obj] = bill
+end
+
+-- Scan inicial de frutas
+for _, v in ipairs(workspace:GetDescendants()) do
+    criarESPFruta(v)
+end
+
+workspace.DescendantAdded:Connect(criarESPFruta)
+
 -- ========== FUNÇÕES AUXILIARES ==========
 local function isAlly(pl)
     if a.team == "" then return false end
@@ -832,7 +883,7 @@ local function getTargets()
             local root = pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Torso")
             if root then
                 local dist3D = (root.Position - cameraPos).Magnitude
-                if dist3D <= a.dist then
+                if dist3D <= a.dist then  -- Agora sempre true com 9999
                     local screenPos, onScreen = WorldToViewportPoint(Camera, root.Position)
                     if onScreen then
                         local distFromMouse = (Vector2New(screenPos.X, screenPos.Y) - mousePos).Magnitude
@@ -949,7 +1000,7 @@ RunService.RenderStepped:Connect(function()
                 local root = pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Torso")
                 if root then
                     local dist = (root.Position - Camera.CFrame.Position).Magnitude
-                    if dist <= a.espDist then
+                    if dist <= a.espDist then  -- Agora sempre true com 9999
                         local screenPos, onScreen = WorldToViewportPoint(Camera, root.Position)
                         if onScreen then
                             data.bill.Adornee = root
@@ -979,6 +1030,40 @@ RunService.RenderStepped:Connect(function()
     else
         for _, data in pairs(espTags) do
             data.bill.Enabled = false
+        end
+    end
+    
+    -- ESP de Frutas
+    if a.espFrutas then
+        for obj, bill in pairs(frutaTags) do
+            if obj and obj.Parent then
+                local dist = (obj.Position - Camera.CFrame.Position).Magnitude
+                if dist <= a.frutaDist then  -- Agora sempre true com 9999
+                    local screenPos, onScreen = WorldToViewportPoint(Camera, obj.Position)
+                    if onScreen then
+                        bill.Adornee = obj
+                        bill.Enabled = true
+                        
+                        local frame = bill:FindFirstChildWhichIsA("Frame")
+                        if frame then
+                            local distLabel = frame:FindFirstChildWhichIsA("TextLabel")
+                            if distLabel and distLabel.Position == UDim2New(0, 0, 0.6, -2) then
+                                distLabel.Text = math_floor(dist).."m"
+                            end
+                        end
+                    else
+                        bill.Enabled = false
+                    end
+                else
+                    bill.Enabled = false
+                end
+            else
+                bill.Enabled = false
+            end
+        end
+    else
+        for _, bill in pairs(frutaTags) do
+            bill.Enabled = false
         end
     end
 end)
@@ -1023,6 +1108,8 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
     end
 end)
 
-print("✅ ZEKYO HUB V5 - VERSÃO OTIMIZADA!")
-print("📌 Performance melhorada • Menos consumo de CPU")
-print("🎯 Todas funções ativas • Design compacto")
+print("✅ ZEKYO HUB V5 - DISTÂNCIA INFINITA!")
+print("📌 Todas as distâncias configuradas para 9999 (infinito)")
+print("🎯 AIMBOT: Pega alvos em qualquer distância")
+print("👁️ ESP: Mostra jogadores em qualquer distância")
+print("🍎 FRUTAS: Mostra frutas em qualquer distância")
