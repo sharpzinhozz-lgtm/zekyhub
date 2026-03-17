@@ -1,7 +1,8 @@
--- ZEKYO HUB V5 - AIMBOT COM SELEÇÃO DE PARTE
+-- ZEKYO HUB V5 - SILENT AIM + AIMBOT MESMO ALVO
 local p=game:GetService("Players");local rs=game:GetService("RunService");local lp=p.LocalPlayer;local cam=workspace.CurrentCamera;local ui=game:GetService("UserInputService");local mouse=lp:GetMouse()
 local a={aim=false,silent=false,esp=false,dist=80,sens=1.0,fov=150,espDist=150,team="",aimPart="Head",hitpart="Head",fovCircle=true,keybind=Enum.KeyCode.X,keyMode="TOGGLE"}
 local currentTab="AIMBOT"
+local currentTarget = nil -- VARIÁVEL PARA ARMAZENAR O ALVO ATUAL
 
 -- FUNÇÃO PARA CRIAR GUI
 local function createGui()
@@ -69,7 +70,7 @@ local subtitle=Instance.new("TextLabel",top)
 subtitle.Size=UDim2.new(1,0,0.3,0)
 subtitle.Position=UDim2.new(0,0,0.6,0)
 subtitle.BackgroundTransparency=1
-subtitle.Text="⚡ SELEÇÃO DE PARTE ⚡"
+subtitle.Text="⚡ SILENT + AIMBOT MESMO ALVO ⚡"
 subtitle.TextColor3=Color3.fromRGB(255,255,200)
 subtitle.TextSize=12
 subtitle.Font=Enum.Font.Gotham
@@ -206,7 +207,7 @@ local sensBox=criarConfig("SENS","SENS",a.sens,0)
 local distBox=criarConfig("DIST","DIST",a.dist,0.35)
 local fovBox=criarConfig("FOV","FOV",a.fov,0.7)
 
--- ========== SELEÇÃO DE PARTE DO AIMBOT ==========
+-- SELEÇÃO DE PARTE DO AIMBOT
 local aimPartFrame=Instance.new("Frame",aimFrame)
 aimPartFrame.Size=UDim2.new(0.8,0,0,50)
 aimPartFrame.Position=UDim2.new(0.1,0,0,190)
@@ -534,6 +535,7 @@ aimToggle.MouseButton1Click:Connect(function()
     a.aim=not a.aim
     aimToggle.Text=a.aim and "🔵 AIMBOT ATIVADO" or "⚪ ATIVAR AIMBOT"
     aimToggle.BackgroundColor3=a.aim and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
+    if not a.aim then currentTarget = nil end
     updateStatus()
 end)
 
@@ -607,6 +609,7 @@ ui.InputBegan:Connect(function(input, gameProcessed)
             a.aim = not a.aim
             aimToggle.Text=a.aim and "🔵 AIMBOT ATIVADO" or "⚪ ATIVAR AIMBOT"
             aimToggle.BackgroundColor3=a.aim and Color3.fromRGB(0,150,0) or Color3.fromRGB(255,50,50)
+            if not a.aim then currentTarget = nil end
         else -- HOLD mode
             keyPressed = true
             a.aim = true
@@ -629,6 +632,7 @@ ui.InputEnded:Connect(function(input, gameProcessed)
         a.aim = false
         aimToggle.Text="⚪ ATIVAR AIMBOT"
         aimToggle.BackgroundColor3=Color3.fromRGB(255,50,50)
+        currentTarget = nil
         updateStatus()
     end
 end)
@@ -865,13 +869,58 @@ rs.RenderStepped:Connect(function()
         circleGui.Enabled=false
     end
     
-    -- AIMBOT COM SELEÇÃO DE PARTE
+    -- AIMBOT - Guarda o alvo atual
     if a.aim then
         local targets=getTargets()
         if #targets>0 then
+            currentTarget = targets[1].pl
             local parte = targets[1].pl.Character:FindFirstChild(a.aimPart) or targets[1].root
             if parte then
-                cam.CFrame = CFrame.lookAt(cam.CFrame.Position, parte.Position)
+                local cameraPos = cam.CFrame.Position
+                local targetPos = parte.Position
+                local direction = (targetPos - cameraPos).Unit
+                cam.CFrame = CFrame.new(cameraPos, cameraPos + direction)
+            end
+        else
+            currentTarget = nil
+        end
+    end
+    
+    -- SILENT AIM - Usa o MESMO alvo do aimbot
+    if a.silent and currentTarget and currentTarget.Character then
+        local parte = currentTarget.Character:FindFirstChild(a.hitpart) or currentTarget.Character:FindFirstChild("HumanoidRootPart")
+        if parte then
+            -- Hook no __namecall para modificar os remotes
+            if not silentHooked then
+                silentHooked = true
+                local mt = getrawmetatable(game)
+                local old = mt.__namecall
+                setreadonly(mt, false)
+                
+                mt.__namecall = function(self, ...)
+                    local args = {...}
+                    local method = getnamecallmethod()
+                    
+                    if a.silent and currentTarget and (method == "FireServer" or method == "InvokeServer") then
+                        local parte = currentTarget.Character:FindFirstChild(a.hitpart) or currentTarget.Character:FindFirstChild("HumanoidRootPart")
+                        if parte then
+                            for i = 1, #args do
+                                if type(args[i]) == "Vector3" then
+                                    args[i] = parte.Position
+                                    break
+                                elseif type(args[i]) == "CFrame" then
+                                    args[i] = CFrame.new(parte.Position)
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    
+                    return old(self, unpack(args))
+                end
+                
+                setreadonly(mt, true)
+                print("✅ Silent aim hook ativado!")
             end
         end
     end
@@ -892,10 +941,13 @@ rs.RenderStepped:Connect(function()
                     espCount=espCount+1
                     
                     local ally=isAlly(data.pl)
-                    esp.name.TextColor3=ally and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,100,100)
-                    esp.name.Text=ally and "🟢 "..data.pl.Name or "🔴 "..data.pl.Name
+                    local isTarget = (currentTarget == data.pl)
+                    local color = isTarget and Color3.fromRGB(255,255,0) or (ally and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,100,100))
+                    
+                    esp.name.TextColor3=color
+                    esp.name.Text=(isTarget and "🎯 " or (ally and "🟢 " or "🔴 "))..data.pl.Name
                     esp.dist.Text=math.floor(data.dist).."m"
-                    esp.dist.TextColor3=ally and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,100,100)
+                    esp.dist.TextColor3=color
                 else
                     esp.bill.Enabled=false
                 end
@@ -924,6 +976,7 @@ end)
 
 -- Inicialização
 updateStatus()
-print("✅ ZEKYO HUB V5 - SELEÇÃO DE PARTE CARREGADO!")
-print("🎯 Partes: HEAD • HUMANOIDROOTPART • TORSO")
-print("🔑 Clique no botão para alternar")
+print("✅ ZEKYO HUB V5 - SILENT + AIMBOT MESMO ALVO!")
+print("🎯 Aimbot gruda em um alvo")
+print("🤫 Silent aim acerta o MESMO alvo")
+print("🟡 Alvo atual fica AMARELO no ESP")
